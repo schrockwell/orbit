@@ -3,6 +3,8 @@ defmodule Orbit.Handler do
 
   alias Orbit.Transaction
 
+  alias ThousandIsland.Socket
+
   @impl ThousandIsland.Handler
   def handle_connection(socket, state) do
     client_cert =
@@ -27,14 +29,39 @@ defmodule Orbit.Handler do
 
       trans
       |> router.call([])
-      |> Transaction.send(socket)
+      |> send_response(socket)
     else
       _ ->
         trans
         |> Transaction.put_status(:bad_request)
-        |> Transaction.send(socket)
+        |> send_response(socket)
     end
 
     {:close, state}
+  end
+
+  defp send_response(%Transaction{sent?: true}, _socket) do
+    raise "response has already been sent"
+  end
+
+  defp send_response(%Transaction{} = trans, socket) do
+    Socket.send(socket, Transaction.response_header(trans))
+
+    if Transaction.human_status(trans.status) == :success do
+      send_body(trans, socket)
+    end
+
+    %{trans | sent?: true}
+  end
+
+  defp send_body(%Transaction{body: %struct{} = stream}, socket)
+       when struct in [Stream, File.Stream] do
+    Enum.each(stream, fn line ->
+      Socket.send(socket, line)
+    end)
+  end
+
+  defp send_body(%Transaction{body: body}, socket) do
+    Socket.send(socket, body)
   end
 end

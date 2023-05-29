@@ -7,6 +7,7 @@ defmodule Orbit.Transaction do
             halted?: false,
             meta: nil,
             params: %{},
+            sent?: false,
             status: :success,
             uri: %URI{}
 
@@ -17,6 +18,7 @@ defmodule Orbit.Transaction do
           halted?: boolean,
           meta: IO.chardata() | nil,
           params: %{String.t() => String.t()},
+          sent?: boolean,
           status: atom | non_neg_integer,
           uri: %URI{}
         }
@@ -73,23 +75,8 @@ defmodule Orbit.Transaction do
     [to_string(numeric_status(trans.status)), " ", meta, @crlf]
   end
 
-  def send(%__MODULE__{} = trans, socket) do
-    ThousandIsland.Socket.send(socket, response_header(trans))
-
-    if human_status(trans.status) == :success do
-      send_body(trans, socket)
-    end
-  end
-
-  defp send_body(%__MODULE__{body: %struct{} = stream}, socket)
-       when struct in [Stream, File.Stream] do
-    Enum.each(stream, fn line ->
-      ThousandIsland.Socket.send(socket, line)
-    end)
-  end
-
-  defp send_body(%__MODULE__{body: body}, socket) do
-    ThousandIsland.Socket.send(socket, body)
+  def input(%__MODULE__{} = trans, prompt) do
+    put_status(trans, :input, prompt)
   end
 
   def halt(%__MODULE__{} = trans), do: %{trans | halted?: true}
