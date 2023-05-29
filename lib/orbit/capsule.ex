@@ -19,8 +19,10 @@ defmodule Orbit.Capsule do
       transport_module: ThousandIsland.Transports.SSL,
       transport_options: [
         certfile: certfile,
+        ip: :any,
         keyfile: keyfile,
-        ip: :any
+        verify_fun: {&verify_peer/3, %{}},
+        verify: :verify_peer
       ]
     ]
 
@@ -29,5 +31,26 @@ defmodule Orbit.Capsule do
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
+  end
+
+  # https://stackoverflow.com/a/32198900
+  def verify_peer(cert, {:bad_cert, :selfsigned_peer}, state) do
+    {:valid, Map.put(state, :cert, cert)}
+  end
+
+  def verify_peer(_cert, {:bad_cert, _} = event, _state) do
+    {:fail, event}
+  end
+
+  def verify_peer(_cert, {:extension, _}, state) do
+    {:unknown, state}
+  end
+
+  def verify_peer(_cert, :valid, state) do
+    {:valid, state}
+  end
+
+  def verify_peer(_cert, :valid_peer, state) do
+    {:valid, state}
   end
 end
