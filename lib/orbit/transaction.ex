@@ -63,10 +63,6 @@ defmodule Orbit.Transaction do
     %{trans | body: body}
   end
 
-  def put_gemtext(%__MODULE__{} = trans, body) do
-    %{trans | body: body, status: :success, meta: Gemtext.mime_type()}
-  end
-
   def response_header(%__MODULE__{meta: nil} = trans) do
     [to_string(numeric_status(trans.status)), @crlf]
   end
