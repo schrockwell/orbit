@@ -15,7 +15,7 @@ defmodule Orbit.Capsule do
     ti_opts = [
       port: port,
       handler_module: Orbit.Handler,
-      handler_options: [router: router],
+      handler_options: %{router: router},
       transport_module: ThousandIsland.Transports.SSL,
       transport_options: [
         certfile: certfile,

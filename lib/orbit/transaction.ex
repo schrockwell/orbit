@@ -3,6 +3,7 @@ defmodule Orbit.Transaction do
 
   defstruct assigns: %{},
             body: [],
+            client_cert: nil,
             halted?: false,
             meta: nil,
             params: %{},
@@ -12,6 +13,7 @@ defmodule Orbit.Transaction do
   @type t :: %__MODULE__{
           assigns: %{atom => any},
           body: IO.chardata() | Stream.t() | nil,
+          client_cert: any,
           halted?: boolean,
           meta: IO.chardata() | nil,
           params: %{String.t() => String.t()},
