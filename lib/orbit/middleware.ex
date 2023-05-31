@@ -1,5 +1,5 @@
 defmodule Orbit.Middleware do
   alias Orbit.Transaction
 
-  @callback call(trans :: Transaction.t(), opts :: any) :: Transaction.t()
+  @callback call(trans :: Transaction.t(), arg :: any) :: Transaction.t()
 end

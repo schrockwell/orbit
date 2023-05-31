@@ -14,7 +14,7 @@ defmodule Orbit.Router do
 
   defmacro __before_compile__(_) do
     quote do
-      def call(%Orbit.Transaction{} = trans, _opts) do
+      def call(%Orbit.Transaction{} = trans, _arg) do
         Orbit.Router.call(__MODULE__, trans, [])
       end
 
@@ -23,7 +23,7 @@ defmodule Orbit.Router do
     end
   end
 
-  defmacro route(path, middleware, opts \\ []) do
+  defmacro route(path, middleware, arg \\ []) do
     match_spec = match_spec(path)
     path_spec = path_spec(path)
 
@@ -33,7 +33,7 @@ defmodule Orbit.Router do
         match_spec: unquote(match_spec),
         path_spec: unquote(path_spec),
         middleware: unquote(middleware),
-        opts: unquote(opts)
+        arg: unquote(arg)
       }
     end
   end
@@ -62,7 +62,7 @@ defmodule Orbit.Router do
     end)
   end
 
-  def call(router, %Transaction{} = trans, _opts) do
+  def call(router, %Transaction{} = trans, _arg) do
     request_comp = components(trans.uri.path)
 
     route =
@@ -83,7 +83,7 @@ defmodule Orbit.Router do
 
       trans = %{trans | params: all_params}
 
-      call_route(route.middleware, trans, route.opts)
+      call_route(route.middleware, trans, route.arg)
     else
       trans
       |> Transaction.put_status(:not_found)
@@ -101,11 +101,11 @@ defmodule Orbit.Router do
     |> Map.new()
   end
 
-  defp call_route(mod, trans, opts) when is_atom(mod) do
-    mod.call(trans, opts)
+  defp call_route(mod, trans, arg) when is_atom(mod) do
+    mod.call(trans, arg)
   end
 
-  defp call_route(fun, trans, opts) when is_function(fun, 2) do
-    fun.(trans, opts)
+  defp call_route(fun, trans, arg) when is_function(fun, 2) do
+    fun.(trans, arg)
   end
 end
