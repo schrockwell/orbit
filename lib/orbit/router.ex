@@ -7,8 +7,9 @@ defmodule Orbit.Router do
     quote do
       @before_compile Orbit.Router
       @behaviour Orbit.Middleware
+      @pipeline [[]]
 
-      import Orbit.Router, only: [route: 2, route: 3]
+      import Orbit.Router, only: [route: 2, route: 3, group: 1, middleware: 1, middleware: 2]
 
       Module.register_attribute(__MODULE__, :routes, accumulate: true)
     end
@@ -34,9 +35,34 @@ defmodule Orbit.Router do
         path: unquote(path),
         match_spec: unquote(match_spec),
         path_spec: unquote(path_spec),
-        middleware: unquote(middleware),
+        pipeline:
+          [
+            {unquote(middleware), unquote(arg)}
+            | @pipeline
+          ]
+          |> List.flatten()
+          |> Enum.reverse(),
         arg: unquote(arg)
       }
+    end
+  end
+
+  defmacro group(do: block) do
+    quote do
+      @pipeline [[] | @pipeline]
+
+      unquote(block)
+
+      @pipeline tl(@pipeline)
+    end
+  end
+
+  defmacro middleware(middleware, arg \\ []) do
+    quote do
+      @pipeline [
+        [{unquote(middleware), unquote(arg)} | hd(@pipeline)]
+        | tl(@pipeline)
+      ]
     end
   end
 
@@ -82,10 +108,9 @@ defmodule Orbit.Router do
     if route do
       path_params = path_params(trans, route)
       all_params = URI.decode_query(trans.uri.query || "", path_params, :rfc3986)
-
       trans = %{trans | params: all_params}
 
-      call_route(route.middleware, trans, route.arg)
+      call_pipeline(trans, route.pipeline)
     else
       trans
       |> put_status(:not_found)
@@ -103,11 +128,23 @@ defmodule Orbit.Router do
     |> Map.new()
   end
 
-  defp call_route(mod, trans, arg) when is_atom(mod) do
+  defp call_middleware(mod, trans, arg) when is_atom(mod) do
     mod.call(trans, arg)
   end
 
-  defp call_route(fun, trans, arg) when is_function(fun, 2) do
+  defp call_middleware(fun, trans, arg) when is_function(fun, 2) do
     fun.(trans, arg)
+  end
+
+  defp call_pipeline(trans, pipeline) do
+    Enum.reduce_while(pipeline, trans, fn {middleware, arg}, trans ->
+      case call_middleware(middleware, trans, arg) do
+        %Transaction{halted?: true} = next_trans ->
+          {:halt, next_trans}
+
+        %Transaction{} = next_trans ->
+          {:cont, next_trans}
+      end
+    end)
   end
 end

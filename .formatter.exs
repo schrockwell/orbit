@@ -4,7 +4,10 @@
   export: [
     locals_without_parens: [
       route: 2,
-      route: 3
+      route: 3,
+      group: 1,
+      middleware: 1,
+      middleware: 2
     ]
   ]
 ]
