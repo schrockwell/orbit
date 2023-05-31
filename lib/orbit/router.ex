@@ -27,13 +27,11 @@ defmodule Orbit.Router do
   end
 
   defmacro route(path, pipe, arg \\ []) do
-    match_spec = match_spec(path)
     path_spec = path_spec(path)
 
     quote do
       @routes %{
         path: unquote(path),
-        match_spec: unquote(match_spec),
         path_spec: unquote(path_spec),
         pipeline:
           [
@@ -75,38 +73,26 @@ defmodule Orbit.Router do
   defp path_spec(path) do
     path
     |> components()
-    |> Enum.map(fn
-      ":" <> param -> {:param, param}
-      comp -> comp
+    |> Enum.reduce_while([], fn
+      ":" <> param, list -> {:cont, [{:param, param} | list]}
+      "*" <> param, list -> {:halt, [{:wildcard_param, param} | list]}
+      comp, list -> {:cont, [comp | list]}
     end)
-  end
-
-  defp match_spec(path) do
-    path
-    |> path_spec()
-    |> Enum.map(fn
-      {:param, _param} -> :param
-      comp -> comp
-    end)
+    |> Enum.reverse()
   end
 
   def call(router, %Transaction{} = trans, _arg) do
-    request_comp = components(trans.uri.path)
+    request_comps = components(trans.uri.path)
 
     route =
       Enum.find(router.__routes__(), fn route ->
-        length(request_comp) == length(route.match_spec) and
-          route.match_spec
-          |> Enum.zip(request_comp)
-          |> Enum.all?(fn
-            {x, x} -> true
-            {:param, _any} -> true
-            _ -> false
-          end)
+        request_comps
+        |> split_request_path(route.path_spec)
+        |> path_matches?(route.path_spec)
       end)
 
     if route do
-      path_params = path_params(trans, route)
+      path_params = path_params(request_comps, route.path_spec)
       all_params = URI.decode_query(trans.uri.query || "", path_params, :rfc3986)
       trans = %{trans | params: all_params}
 
@@ -118,11 +104,39 @@ defmodule Orbit.Router do
     end
   end
 
-  defp path_params(trans, route) do
-    route.path_spec
-    |> Enum.zip(components(trans.uri.path))
+  defp split_request_path(request_components, path_spec) do
+    if match?({:wildcard_param, _}, List.last(path_spec)) do
+      {path_comps, wildcard_comps} = Enum.split(request_components, length(path_spec) - 1)
+
+      path_comps ++ [Enum.join(wildcard_comps, "/")]
+    else
+      request_components
+    end
+  end
+
+  defp path_matches?(path_comps, path_spec) do
+    if length(path_comps) == length(path_spec) do
+      path_spec
+      |> Enum.zip(path_comps)
+      |> Enum.all?(fn
+        {{:param, _}, _any} -> true
+        {{:wildcard_param, _}, _any} -> true
+        {string, string} when is_binary(string) -> true
+        _ -> false
+      end)
+    else
+      false
+    end
+  end
+
+  defp path_params(path_comps, path_spec) do
+    components = split_request_path(path_comps, path_spec)
+
+    path_spec
+    |> Enum.zip(components)
     |> Enum.flat_map(fn
       {{:param, key}, value} -> [{key, value}]
+      {{:wildcard_param, key}, value} -> [{key, value}]
       _ -> []
     end)
     |> Map.new()
