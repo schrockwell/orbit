@@ -1,4 +1,6 @@
 defmodule Orbit.Router do
+  import Orbit.Transaction
+
   alias Orbit.Transaction
 
   defmacro __using__(_) do
@@ -86,8 +88,8 @@ defmodule Orbit.Router do
       call_route(route.middleware, trans, route.arg)
     else
       trans
-      |> Transaction.put_status(:not_found)
-      |> Transaction.halt()
+      |> put_status(:not_found)
+      |> halt()
     end
   end
 

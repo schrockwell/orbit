@@ -38,6 +38,13 @@ defmodule Orbit.Handler do
     end
 
     {:close, state}
+  rescue
+    error ->
+      trans
+      |> Transaction.put_status(:temporary_failure, "Internal server error")
+      |> send_response(socket)
+
+      {:error, error, state}
   end
 
   defp send_response(%Transaction{sent?: true}, _socket) do
