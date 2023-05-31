@@ -5,6 +5,7 @@ defmodule Orbit.Controller do
   alias Orbit.Transaction
 
   @orbit_view :orbit_view
+  @orbit_layouts :orbit_layouts
 
   defmacro __using__(opts) do
     view_module = opts[:view]
@@ -70,9 +71,52 @@ defmodule Orbit.Controller do
     # trans = assign(trans, :trans, %{trans | assigns: :no_assigns})
 
     if view = view(trans) do
-      gmi(trans, view.(trans.assigns))
+      render_views(trans, [view | layouts(trans)])
     else
       raise "view not set"
     end
+  end
+
+  defp render_views(trans, views) do
+    body =
+      Enum.reduce(views, nil, fn inner_view, inner_content ->
+        inner_assigns = Map.put(trans.assigns, :inner_content, inner_content)
+        call_view(inner_view, inner_assigns)
+      end)
+
+    gmi(trans, body)
+  end
+
+  defguard is_view(view)
+           when is_function(view, 1) or
+                  (is_tuple(view) and is_atom(elem(view, 0)) and is_atom(elem(view, 1)))
+
+  defguard is_pipe(pipe)
+           when is_function(pipe, 2) or
+                  is_atom(pipe) or
+                  (is_tuple(pipe) and is_atom(elem(pipe, 0)) and is_atom(elem(pipe, 1)))
+
+  def push_layout(%Transaction{} = trans, layout) when is_view(layout) do
+    put_private(trans, @orbit_layouts, [layout | layouts(trans)])
+  end
+
+  def pop_layout(%Transaction{} = trans, _arg \\ []) do
+    put_private(trans, @orbit_layouts, tl(layouts(trans)))
+  end
+
+  def clear_layouts(%Transaction{} = trans, _arg \\ []) do
+    put_private(trans, @orbit_layouts, [])
+  end
+
+  def layouts(%Transaction{} = trans) do
+    trans.private[@orbit_layouts] || []
+  end
+
+  defp call_view({mod, fun}, assigns) when is_atom(mod) and is_atom(fun) do
+    apply(mod, fun, [assigns])
+  end
+
+  defp call_view(fun, assigns) when is_function(fun, 1) do
+    fun.(assigns)
   end
 end
