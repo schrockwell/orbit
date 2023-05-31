@@ -1,4 +1,8 @@
 defmodule Orbit.View do
+  defguard is_view(view)
+           when is_function(view, 1) or
+                  (is_tuple(view) and is_atom(elem(view, 0)) and is_atom(elem(view, 1)))
+
   defmacro sigil_G({:<<>>, _, [binary]}, _modifier) do
     compiled =
       binary
@@ -17,6 +21,30 @@ defmodule Orbit.View do
       String.slice(string, 0..-2)
     else
       string
+    end
+  end
+
+  defmacro render(view) do
+    quote do
+      unquote(view).(%{})
+    end
+  end
+
+  defmacro render(view, do: block) do
+    quote do
+      unquote(view).(%{inner_content: unquote(block)})
+    end
+  end
+
+  defmacro render(view, assigns) do
+    quote do
+      unquote(view).(Enum.into(unquote(assigns), %{}))
+    end
+  end
+
+  defmacro render(view, assigns, do: block) do
+    quote do
+      unquote(view).(Map.put(Enum.into(unquote(assigns), %{}), :inner_content, unquote(block)))
     end
   end
 end

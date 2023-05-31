@@ -1,5 +1,6 @@
 defmodule Orbit.Controller do
   import Orbit.Transaction
+  import Orbit.View, only: [is_view: 1]
 
   alias Orbit.Gemtext
   alias Orbit.Transaction
@@ -86,10 +87,6 @@ defmodule Orbit.Controller do
 
     gmi(trans, body)
   end
-
-  defguard is_view(view)
-           when is_function(view, 1) or
-                  (is_tuple(view) and is_atom(elem(view, 0)) and is_atom(elem(view, 1)))
 
   defguard is_pipe(pipe)
            when is_function(pipe, 2) or
