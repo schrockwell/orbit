@@ -6,10 +6,10 @@ defmodule Orbit.Router do
   defmacro __using__(_) do
     quote do
       @before_compile Orbit.Router
-      @behaviour Orbit.Middleware
+      @behaviour Orbit.Pipe
       @pipeline [[]]
 
-      import Orbit.Router, only: [route: 2, route: 3, group: 1, middleware: 1, middleware: 2]
+      import Orbit.Router, only: [route: 2, route: 3, group: 1, pipe: 1, pipe: 2]
 
       Module.register_attribute(__MODULE__, :routes, accumulate: true)
     end
@@ -26,7 +26,7 @@ defmodule Orbit.Router do
     end
   end
 
-  defmacro route(path, middleware, arg \\ []) do
+  defmacro route(path, pipe, arg \\ []) do
     match_spec = match_spec(path)
     path_spec = path_spec(path)
 
@@ -37,7 +37,7 @@ defmodule Orbit.Router do
         path_spec: unquote(path_spec),
         pipeline:
           [
-            {unquote(middleware), unquote(arg)}
+            {unquote(pipe), unquote(arg)}
             | @pipeline
           ]
           |> List.flatten()
@@ -57,10 +57,10 @@ defmodule Orbit.Router do
     end
   end
 
-  defmacro middleware(middleware, arg \\ []) do
+  defmacro pipe(pipe, arg \\ []) do
     quote do
       @pipeline [
-        [{unquote(middleware), unquote(arg)} | hd(@pipeline)]
+        [{unquote(pipe), unquote(arg)} | hd(@pipeline)]
         | tl(@pipeline)
       ]
     end
@@ -128,17 +128,17 @@ defmodule Orbit.Router do
     |> Map.new()
   end
 
-  defp call_middleware(mod, trans, arg) when is_atom(mod) do
+  defp call_pipe(mod, trans, arg) when is_atom(mod) do
     mod.call(trans, arg)
   end
 
-  defp call_middleware(fun, trans, arg) when is_function(fun, 2) do
+  defp call_pipe(fun, trans, arg) when is_function(fun, 2) do
     fun.(trans, arg)
   end
 
   defp call_pipeline(trans, pipeline) do
-    Enum.reduce_while(pipeline, trans, fn {middleware, arg}, trans ->
-      case call_middleware(middleware, trans, arg) do
+    Enum.reduce_while(pipeline, trans, fn {pipe, arg}, trans ->
+      case call_pipe(pipe, trans, arg) do
         %Transaction{halted?: true} = next_trans ->
           {:halt, next_trans}
 

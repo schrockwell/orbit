@@ -10,7 +10,7 @@ defmodule Orbit.Controller do
     view_module = opts[:view]
 
     quote do
-      @behaviour Orbit.Middleware
+      @behaviour Orbit.Pipe
 
       def call(%Transaction{} = trans, action) when is_atom(action) do
         trans =
