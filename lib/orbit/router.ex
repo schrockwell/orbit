@@ -132,6 +132,10 @@ defmodule Orbit.Router do
     mod.call(trans, arg)
   end
 
+  defp call_pipe({mod, fun}, trans, arg) when is_atom(mod) and is_atom(fun) do
+    apply(mod, fun, [trans, arg])
+  end
+
   defp call_pipe(fun, trans, arg) when is_function(fun, 2) do
     fun.(trans, arg)
   end
