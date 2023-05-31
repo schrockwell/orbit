@@ -14,8 +14,8 @@ defmodule Orbit.Router do
 
   defmacro __before_compile__(_) do
     quote do
-      def call(%Orbit.Transaction{} = trans, opts) do
-        Orbit.Router.call(__MODULE__, trans, opts)
+      def call(%Orbit.Transaction{} = trans, _opts) do
+        Orbit.Router.call(__MODULE__, trans, [])
       end
 
       @reversed_routes Enum.reverse(@routes)
@@ -62,7 +62,7 @@ defmodule Orbit.Router do
     end)
   end
 
-  def call(router, %Transaction{} = trans, opts) do
+  def call(router, %Transaction{} = trans, _opts) do
     request_comp = components(trans.uri.path)
 
     route =
@@ -82,9 +82,8 @@ defmodule Orbit.Router do
       all_params = URI.decode_query(trans.uri.query || "", path_params, :rfc3986)
 
       trans = %{trans | params: all_params}
-      opts = Keyword.merge(opts, route.opts)
 
-      route.middleware.(trans, opts)
+      call_route(route.middleware, trans, route.opts)
     else
       trans
       |> Transaction.put_status(:not_found)
@@ -100,5 +99,13 @@ defmodule Orbit.Router do
       _ -> []
     end)
     |> Map.new()
+  end
+
+  defp call_route(mod, trans, opts) when is_atom(mod) do
+    mod.call(trans, opts)
+  end
+
+  defp call_route(fun, trans, opts) when is_function(fun, 2) do
+    fun.(trans, opts)
   end
 end
