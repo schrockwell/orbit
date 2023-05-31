@@ -6,18 +6,26 @@ defmodule Orbit.Controller do
 
   @orbit_view :orbit_view
 
-  defmacro __using__(_) do
+  defmacro __using__(opts) do
+    view_module = opts[:view]
+
     quote do
       @behaviour Orbit.Middleware
 
       def call(%Transaction{} = trans, action) when is_atom(action) do
         trans =
           Orbit.Controller.put_new_view(trans, fn ->
-            Orbit.Controller.default_view(__MODULE__, action)
+            Function.capture(unquote(view_module), action, 1)
           end)
 
+        action(trans, action)
+      end
+
+      def action(trans, action) do
         apply(__MODULE__, action, [trans, trans.params])
       end
+
+      defoverridable action: 2
     end
   end
 
@@ -61,10 +69,10 @@ defmodule Orbit.Controller do
   def render(%Transaction{} = trans) do
     # trans = assign(trans, :trans, %{trans | assigns: :no_assigns})
 
-    gmi(trans, view(trans).(trans.assigns))
-  end
-
-  def default_view(controller, action) do
-    Function.capture(Orbit.Controller.view_module(controller), action, 1)
+    if view = view(trans) do
+      gmi(trans, view.(trans.assigns))
+    else
+      raise "view not set"
+    end
   end
 end
