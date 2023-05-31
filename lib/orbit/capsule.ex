@@ -8,14 +8,14 @@ defmodule Orbit.Capsule do
   @impl true
   def init(opts) do
     port = opts[:port] || 1965
-    router = opts[:router] || "the :router option is required"
+    endpoint = opts[:endpoint] || "the :endpoint option is required"
     certfile = opts[:certfile] || "the :certfile option is required"
     keyfile = opts[:keyfile] || "the :keyfile option is required"
 
     ti_opts = [
       port: port,
       handler_module: Orbit.Handler,
-      handler_options: %{router: router},
+      handler_options: %{endpoint: endpoint},
       transport_module: ThousandIsland.Transports.SSL,
       transport_options: [
         certfile: certfile,

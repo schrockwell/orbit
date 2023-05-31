@@ -25,10 +25,10 @@ defmodule Orbit.Handler do
          true <- byte_size(uri_string) <= 1024,
          uri = %URI{scheme: "gemini"} <- URI.parse(uri_string) do
       trans = %{trans | uri: uri}
-      router = state[:router]
+      endpoint = state[:endpoint]
 
       trans
-      |> router.call([])
+      |> endpoint.call([])
       |> send_response(socket)
     else
       _ ->
