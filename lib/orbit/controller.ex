@@ -116,4 +116,12 @@ defmodule Orbit.Controller do
   defp call_view(fun, assigns) when is_function(fun, 1) do
     fun.(assigns)
   end
+
+  def send_file(%Transaction{} = trans, path) do
+    mime_type = MIME.from_path(path)
+
+    trans
+    |> put_status(:success, mime_type)
+    |> put_body(File.stream!(path, [], 1024))
+  end
 end
