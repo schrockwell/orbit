@@ -44,8 +44,15 @@ defmodule Orbit.Handler do
       |> Transaction.put_status(:temporary_failure, "Internal server error")
       |> send_response(socket)
 
-      {:error, error, state}
+      {:error, {error, __STACKTRACE__}, state}
   end
+
+  @impl ThousandIsland.Handler
+  def handle_error({error, stacktrace}, _socket, _state) when is_exception(error) do
+    Kernel.reraise(error, stacktrace)
+  end
+
+  def handle_error(_reason, _socket, _state), do: :ok
 
   defp send_response(%Transaction{sent?: true}, _socket) do
     raise "response has already been sent"
