@@ -1,14 +1,13 @@
 defmodule Orbit.Transaction do
-  alias Orbit.Gemtext
-
   defstruct assigns: %{},
             body: [],
             client_cert: nil,
             halted?: false,
             meta: nil,
             params: %{},
+            private: %{},
             sent?: false,
-            status: :success,
+            status: nil,
             uri: %URI{}
 
   @type t :: %__MODULE__{
@@ -18,6 +17,7 @@ defmodule Orbit.Transaction do
           halted?: boolean,
           meta: IO.chardata() | nil,
           params: %{String.t() => String.t()},
+          private: %{optional(atom) => any},
           sent?: boolean,
           status: atom | non_neg_integer,
           uri: %URI{}
@@ -83,5 +83,9 @@ defmodule Orbit.Transaction do
 
   def assign(%__MODULE__{} = trans, key, value) do
     %{trans | assigns: Map.put(trans.assigns, key, value)}
+  end
+
+  def put_private(%__MODULE__{} = trans, key, value) when is_atom(key) do
+    %{trans | private: Map.put(trans.private, key, value)}
   end
 end
