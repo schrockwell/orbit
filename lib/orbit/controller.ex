@@ -1,6 +1,18 @@
 defmodule Orbit.Controller do
+  @moduledoc """
+  Processes requests and renders responses.
+
+  ## Layouts
+
+  todo
+
+  ## Example
+
+  todo
+
+  """
   import Orbit.Transaction
-  import Orbit.View, only: [is_view: 1]
+  import Orbit.Internal, only: [is_view: 1]
 
   alias Orbit.Gemtext
   alias Orbit.Transaction
@@ -31,33 +43,32 @@ defmodule Orbit.Controller do
     end
   end
 
+  @doc """
+  Puts the body of a successful response.
+  """
   def success(%Transaction{} = trans, body, mime_type) do
     trans
     |> put_body(body)
     |> put_status(:success, mime_type)
   end
 
+  @doc """
+  Puts Gemtext content as the body of a successful response.
+  """
   def gmi(%Transaction{} = trans, body) do
     success(trans, body, Gemtext.mime_type())
   end
 
-  def view_module(controller_module) do
-    module_string = to_string(controller_module)
-
-    view_module_string =
-      if String.ends_with?(module_string, "Controller") do
-        String.slice(module_string, 0..-11) <> "View"
-      else
-        module_string <> "View"
-      end
-
-    String.to_atom(view_module_string)
-  end
-
+  @doc """
+  Puts the Gemtext view to be rendered.
+  """
   def put_view(%Transaction{} = trans, view) when is_function(view, 1) do
     put_private(trans, @orbit_view, view)
   end
 
+  @doc """
+  Puts a Gemtext view to be rendered if one has not already been set.
+  """
   def put_new_view(%Transaction{} = trans, fun) when is_function(fun, 0) do
     if view(trans) do
       trans
@@ -66,10 +77,16 @@ defmodule Orbit.Controller do
     end
   end
 
+  @doc """
+  Gets the Gemtext view to be rendered.
+  """
   def view(%Transaction{} = trans), do: trans.private[@orbit_view]
 
+  @doc """
+  Renders the Gemtext view and layouts as a successful response.
+  """
   def render(%Transaction{} = trans) do
-    # trans = assign(trans, :trans, %{trans | assigns: :no_assigns})
+    trans = assign(trans, :trans, %{trans | assigns: :no_assigns})
 
     if view = view(trans) do
       render_views(trans, [view | layouts(trans)])
@@ -88,23 +105,37 @@ defmodule Orbit.Controller do
     gmi(trans, body)
   end
 
-  defguard is_pipe(pipe)
-           when is_function(pipe, 2) or
-                  is_atom(pipe) or
-                  (is_tuple(pipe) and is_atom(elem(pipe, 0)) and is_atom(elem(pipe, 1)))
+  @doc """
+  Adds a nested layout view.
 
+  Layouts are rendered outer-to-inner, so the first layout pushed onto the stack will be the outermost
+  layout, and the next layout pushed will be nested inside that, and so on.
+
+  This is typically used directly in a router as a pipe, e.g.
+
+      pipe {Orbit.Controller, :push_layout}, {MyApp.LayoutView, :main}
+  """
   def push_layout(%Transaction{} = trans, layout) when is_view(layout) do
     put_private(trans, @orbit_layouts, [layout | layouts(trans)])
   end
 
+  @doc """
+  Removes the innermost layout view.
+  """
   def pop_layout(%Transaction{} = trans, _arg \\ []) do
     put_private(trans, @orbit_layouts, tl(layouts(trans)))
   end
 
+  @doc """
+  Removes all layout views.
+  """
   def clear_layouts(%Transaction{} = trans, _arg \\ []) do
     put_private(trans, @orbit_layouts, [])
   end
 
+  @doc """
+  Returns a list of all layouts.
+  """
   def layouts(%Transaction{} = trans) do
     trans.private[@orbit_layouts] || []
   end
@@ -117,8 +148,15 @@ defmodule Orbit.Controller do
     fun.(assigns)
   end
 
-  def send_file(%Transaction{} = trans, path) do
-    mime_type = MIME.from_path(path)
+  @doc """
+  Sends a file as a binary stream.
+
+  ## Options
+
+  - `:mime_type` - the MIME type of the file; if unspecified, it is determined from the file extension
+  """
+  def send_file(%Transaction{} = trans, path, opts \\ []) do
+    mime_type = opts[:mime_type] || MIME.from_path(path)
 
     trans
     |> put_status(:success, mime_type)

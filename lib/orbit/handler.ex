@@ -1,4 +1,6 @@
 defmodule Orbit.Handler do
+  @moduledoc false
+
   use ThousandIsland.Handler
 
   alias Orbit.Transaction

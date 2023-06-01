@@ -22,7 +22,8 @@ defmodule Orbit.MixProject do
   defp deps do
     [
       {:thousand_island, "~> 0.6.7"},
-      {:mime, "~> 2.0"}
+      {:mime, "~> 2.0"},
+      {:ex_doc, "~> 0.27", only: :dev, runtime: false}
     ]
   end
 end

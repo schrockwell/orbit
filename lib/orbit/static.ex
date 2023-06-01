@@ -1,4 +1,15 @@
 defmodule Orbit.Static do
+  @moduledoc """
+  Serves static content from the file system.
+
+  The `:path` or `*path` URL parameter must be specified when defining the route, e.g.
+
+      route "/static/*path", Orbit.Static, from: "priv/static"
+
+  ## Options
+
+  - `:from` (required) - the directory to serve
+  """
   @behaviour Orbit.Pipe
 
   import Orbit.Controller

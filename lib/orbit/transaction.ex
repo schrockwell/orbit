@@ -1,4 +1,47 @@
 defmodule Orbit.Transaction do
+  @moduledoc """
+  The request-response cycle.
+
+  Analgous to `%Plug.Conn{}`.
+
+  ## Fields
+
+  - `:assigns` - a generic map of application-defined data to be manipulated and rendered
+  - `:body` - the response body; may be an iolist or a stream
+  - `:client_cert` - the client TLS certificate
+  - `:halted?` - if the current response pipeline should be stopped prematurely
+  - `:meta` - the response meta field, meaning depends on the status code
+  - `:params` - request parameters from the URI and query params
+  - `:private` - a generic map of library-defined data that shuold not be read by library end-users
+  - `:sent?` - if the response has been transmitted back to the client
+  - `:status` - the response status code, may be an integer or an atom (see below)
+  - `:uri` - the parsed request URI
+
+  ## Status Codes
+
+  Response status codes may be specified by integer or atom.
+
+  | Status | Name |
+  | ---- | ---- |
+  | 10 | `:input` |
+  | 11 | `:sensitive_input` |
+  | 20 | `:success` |
+  | 30 | `:redirect_temporary` |
+  | 31 | `:redirect_permanent` |
+  | 40 | `:temporary_failure` |
+  | 41 | `:server_unavailable` |
+  | 42 | `:cgi_error` |
+  | 43 | `:proxy_error` |
+  | 44 | `:slow_down` |
+  | 50 | `:permanent_failure` |
+  | 51 | `:not_found` |
+  | 52 | `:gone` |
+  | 53 | `:proxy_request_refused` |
+  | 59 | `:bad_request` |
+  | 60 | `:client_certificate_required` |
+  | 61 | `:certificate_not_authorized` |
+  | 62 | `:certificate_not_valid` |
+  """
   defstruct assigns: %{},
             body: [],
             client_cert: nil,
@@ -12,7 +55,7 @@ defmodule Orbit.Transaction do
 
   @type t :: %__MODULE__{
           assigns: %{atom => any},
-          body: IO.chardata() | Stream.t() | nil,
+          body: IO.chardata() | %Stream{} | nil,
           client_cert: any,
           halted?: boolean,
           meta: IO.chardata() | nil,

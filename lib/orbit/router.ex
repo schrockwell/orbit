@@ -18,7 +18,7 @@ defmodule Orbit.Router do
   defmacro __before_compile__(_) do
     quote do
       def call(%Orbit.Transaction{} = trans, _arg) do
-        Orbit.Router.call(__MODULE__, trans, [])
+        Orbit.Router.__call__(__MODULE__, trans, [])
       end
 
       @reversed_routes Enum.reverse(@routes)
@@ -81,7 +81,8 @@ defmodule Orbit.Router do
     |> Enum.reverse()
   end
 
-  def call(router, %Transaction{} = trans, _arg) do
+  @doc false
+  def __call__(router, %Transaction{} = trans, _arg) do
     request_comps = components(trans.uri.path)
 
     route =
