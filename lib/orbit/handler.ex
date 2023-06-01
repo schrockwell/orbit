@@ -3,12 +3,14 @@ defmodule Orbit.Handler do
 
   use ThousandIsland.Handler
 
+  alias Orbit.Status
   alias Orbit.Transaction
 
   alias ThousandIsland.Socket
 
   @max_uri_size 1024
   @crlf_size 2
+  @crlf "\r\n"
 
   @impl ThousandIsland.Handler
   def handle_connection(socket, state) do
@@ -77,13 +79,21 @@ defmodule Orbit.Handler do
   end
 
   defp send_response(%Transaction{} = trans, socket) do
-    Socket.send(socket, Transaction.response_header(trans))
+    Socket.send(socket, response_header(trans))
 
-    if Transaction.human_status(trans.status) == :success do
+    if Status.to_atom(trans.status) == :success do
       send_body(trans, socket)
     end
 
     %{trans | sent?: true}
+  end
+
+  defp response_header(%Transaction{meta: nil} = trans) do
+    [to_string(Status.to_integer(trans.status)), @crlf]
+  end
+
+  defp response_header(%Transaction{meta: meta} = trans) do
+    [to_string(Status.to_integer(trans.status)), " ", meta, @crlf]
   end
 
   defp send_body(%Transaction{body: %struct{} = stream}, socket)

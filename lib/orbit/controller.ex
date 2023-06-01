@@ -2,19 +2,86 @@ defmodule Orbit.Controller do
   @moduledoc """
   Processes requests and renders responses.
 
+  ## Options
+
+  - `:view` - a view module used to render actions
+
+  ## Usage
+
+  The `use Orbit.Controller` macro injects the following into the module:
+
+      @behaviour Orbit.Pipe
+
+      def call(transaction, arg)
+      def action(transaction, action) # overridable
+
+  The `call/2` function implements the `Orbit.Pipe` callback, making the controller behave like any other pipe. The
+  `arg` is the action name, as an atom. If the `:view` option has been specified, then the view is
+  automatically set by calling a function on the view module with the same name as the controller action. Finally,
+  `action/2` is called.
+
+  The `action/2` function is overridable. It's an easy way to extend the controller's default behavior, or to customize
+  the signature of the action functions to something other than `action_name(trans, params)`. Its default implementation is:
+
+      def action(trans, action) do
+        apply(__MODULE__, action, [trans, trans.params])
+      end
+
   ## Layouts
 
-  todo
+  Layouts are simply views that are provided an `@inner_content` assign which contains the content of the child view
+  to render within the layout. Layouts can be nested by pushing additional layouts to the Transaction.
+
+      def outer_layout(assigns) do
+        ~G\"\"\"
+        begin outer
+        <%= @inner_content %>
+        end outer
+        \"\"\"
+      end
+
+      def inner_layout(assigns) do
+        ~G\"\"\"
+        begin inner
+        <%= @inner_content %>
+        end inner
+        \"\"\"
+      end
+
+      trans
+      |> push_layout(&outer_layout/1)
+      |> push_layout(&inner_layout/1)
+      |> render()
+
+      # =>
+      \"\"\"
+      begin outer
+      begin inner
+      ...view...
+      end inner
+      end outer
+      \"\"\"
 
   ## Example
 
-  todo
+      # Router
+      route "/users", MyApp.UserController, :index
+      route "/users/:id", MyApp.UserController, :show
+
+      # Controller
+      defmodule MyApp.UserController do
+        use Orbit.Controller, view: MyApp.UserView
+
+        def index(trans, _params), do: ...
+        def show(trans, %{"id" => id}), do: ...
+      end
 
   """
   import Orbit.Transaction
   import Orbit.Internal, only: [is_view: 1]
 
   alias Orbit.Gemtext
+  alias Orbit.Status
   alias Orbit.Transaction
 
   @orbit_view :orbit_view
@@ -26,15 +93,22 @@ defmodule Orbit.Controller do
     quote do
       @behaviour Orbit.Pipe
 
+      @doc false
+      @impl Orbit.Pipe
       def call(%Transaction{} = trans, action) when is_atom(action) do
         trans =
-          Orbit.Controller.put_new_view(trans, fn ->
-            Function.capture(unquote(view_module), action, 1)
-          end)
+          if unquote(view_module) do
+            Orbit.Controller.put_new_view(trans, fn ->
+              Function.capture(unquote(view_module), action, 1)
+            end)
+          else
+            trans
+          end
 
         action(trans, action)
       end
 
+      @doc false
       def action(trans, action) do
         apply(__MODULE__, action, [trans, trans.params])
       end
@@ -44,19 +118,10 @@ defmodule Orbit.Controller do
   end
 
   @doc """
-  Puts the body of a successful response.
-  """
-  def success(%Transaction{} = trans, body, mime_type) do
-    trans
-    |> put_body(body)
-    |> put_status(:success, mime_type)
-  end
-
-  @doc """
   Puts Gemtext content as the body of a successful response.
   """
   def gmi(%Transaction{} = trans, body) do
-    success(trans, body, Gemtext.mime_type())
+    Status.success(trans, body, Gemtext.mime_type())
   end
 
   @doc """
@@ -157,9 +222,6 @@ defmodule Orbit.Controller do
   """
   def send_file(%Transaction{} = trans, path, opts \\ []) do
     mime_type = opts[:mime_type] || MIME.from_path(path)
-
-    trans
-    |> put_status(:success, mime_type)
-    |> put_body(File.stream!(path, [], 1024))
+    Status.success(trans, File.stream!(path, [], 1024), mime_type)
   end
 end

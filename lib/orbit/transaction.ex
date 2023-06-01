@@ -16,31 +16,6 @@ defmodule Orbit.Transaction do
   - `:sent?` - if the response has been transmitted back to the client
   - `:status` - the response status code, may be an integer or an atom (see below)
   - `:uri` - the parsed request URI
-
-  ## Status Codes
-
-  Response status codes may be specified by integer or atom.
-
-  | Status | Name |
-  | ---- | ---- |
-  | 10 | `:input` |
-  | 11 | `:sensitive_input` |
-  | 20 | `:success` |
-  | 30 | `:redirect_temporary` |
-  | 31 | `:redirect_permanent` |
-  | 40 | `:temporary_failure` |
-  | 41 | `:server_unavailable` |
-  | 42 | `:cgi_error` |
-  | 43 | `:proxy_error` |
-  | 44 | `:slow_down` |
-  | 50 | `:permanent_failure` |
-  | 51 | `:not_found` |
-  | 52 | `:gone` |
-  | 53 | `:proxy_request_refused` |
-  | 59 | `:bad_request` |
-  | 60 | `:client_certificate_required` |
-  | 61 | `:certificate_not_authorized` |
-  | 62 | `:certificate_not_valid` |
   """
   defstruct assigns: %{},
             body: [],
@@ -62,61 +37,9 @@ defmodule Orbit.Transaction do
           params: %{String.t() => String.t()},
           private: %{optional(atom) => any},
           sent?: boolean,
-          status: atom | non_neg_integer,
+          status: Orbit.Status.t(),
           uri: %URI{}
         }
-
-  @crlf "\r\n"
-
-  @status_codes %{
-    input: 10,
-    sensitive_input: 11,
-    success: 20,
-    redirect_temporary: 30,
-    redirect_permanent: 31,
-    temporary_failure: 40,
-    server_unavailable: 41,
-    cgi_error: 42,
-    proxy_error: 43,
-    slow_down: 44,
-    permanent_failure: 50,
-    not_found: 51,
-    gone: 52,
-    proxy_request_refused: 53,
-    bad_request: 59,
-    client_certificate_required: 60,
-    certificate_not_authorized: 61,
-    certificate_not_valid: 62
-  }
-  @inverted_status_codes Map.new(@status_codes, fn {k, v} -> {v, k} end)
-  @status_keys Map.keys(@status_codes)
-  @status_values Map.values(@status_codes)
-
-  def numeric_status(status) when status in @status_keys, do: @status_codes[status]
-  def numeric_status(status) when status in @status_values, do: status
-
-  def human_status(status) when status in @status_values, do: @inverted_status_codes[status]
-  def human_status(status) when status in @status_keys, do: status
-
-  def put_status(%__MODULE__{} = trans, status, meta \\ nil) do
-    %{trans | status: status, meta: meta}
-  end
-
-  def put_body(%__MODULE__{} = trans, body) do
-    %{trans | body: body}
-  end
-
-  def response_header(%__MODULE__{meta: nil} = trans) do
-    [to_string(numeric_status(trans.status)), @crlf]
-  end
-
-  def response_header(%__MODULE__{meta: meta} = trans) do
-    [to_string(numeric_status(trans.status)), " ", meta, @crlf]
-  end
-
-  def input(%__MODULE__{} = trans, prompt) do
-    put_status(trans, :input, prompt)
-  end
 
   def halt(%__MODULE__{} = trans), do: %{trans | halted?: true}
 
@@ -130,5 +53,26 @@ defmodule Orbit.Transaction do
 
   def put_private(%__MODULE__{} = trans, key, value) when is_atom(key) do
     %{trans | private: Map.put(trans.private, key, value)}
+  end
+
+  @doc """
+  Puts the status and metadata for a response.
+
+  If the status code is non-successful, then the response body will be ignore and not sent.
+
+  The status can be an integer or an atom. See `Orbit.Status` for a list of applicable status codes and
+  convenience functions.
+  """
+  def put_status(%__MODULE__{} = trans, status, meta \\ nil) do
+    %{trans | status: status, meta: meta}
+  end
+
+  @doc """
+  Puts the body and MIME type for a successful response.
+
+  The MIME type is optional. If unspecified, clients will default to "text/gemini; charset=utf-8".
+  """
+  def put_body(%__MODULE__{} = trans, body, mime_type \\ nil) do
+    %{trans | body: body, meta: mime_type}
   end
 end
