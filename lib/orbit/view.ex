@@ -1,4 +1,12 @@
 defmodule Orbit.View do
+  defmacro __using__(_) do
+    quote do
+      import Orbit.View
+
+      require EEx
+    end
+  end
+
   defguard is_view(view)
            when is_function(view, 1) or
                   (is_tuple(view) and is_atom(elem(view, 0)) and is_atom(elem(view, 1)))
@@ -46,5 +54,24 @@ defmodule Orbit.View do
     quote do
       unquote(view).(Map.put(Enum.into(unquote(assigns), %{}), :inner_content, unquote(block)))
     end
+  end
+
+  defmacro embed_templates(path) when is_binary(path) do
+    absolute_path = Path.join(Path.dirname(__CALLER__.file), path)
+
+    absolute_path
+    |> Path.wildcard()
+    |> Enum.map(fn template_path ->
+      template_name =
+        template_path
+        |> Path.basename()
+        |> String.split(".")
+        |> hd()
+        |> String.to_atom()
+
+      quote do
+        EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns])
+      end
+    end)
   end
 end
