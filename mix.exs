@@ -7,7 +7,15 @@ defmodule Orbit.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+
+      # Docs
+      name: "Orbit",
+      source_url: "https://github.com/schrockwell/orbit",
+      docs: [
+        extras: ["README.md"],
+        logo: "logo.png"
+      ]
     ]
   end
 

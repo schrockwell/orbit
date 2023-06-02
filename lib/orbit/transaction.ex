@@ -4,18 +4,25 @@ defmodule Orbit.Transaction do
 
   Analgous to `%Plug.Conn{}`.
 
-  ## Fields
+  ## Request Fields
 
-  - `:assigns` - a generic map of application-defined data to be manipulated and rendered
-  - `:body` - the response body; may be an iolist or a stream
-  - `:client_cert` - the client TLS certificate
-  - `:halted?` - if the current response pipeline should be stopped prematurely
-  - `:meta` - the response meta field, meaning depends on the status code
-  - `:params` - request parameters from the URI and query params
-  - `:private` - a generic map of library-defined data that shuold not be read by library end-users
-  - `:sent?` - if the response has been transmitted back to the client
-  - `:status` - the response status code, may be an integer or an atom (see below)
-  - `:uri` - the parsed request URI
+  - `client_cert` - the client TLS certificate
+  - `params` - combined request parameters from the URI and query params
+  - `uri` - the parsed request URI
+
+  ## Response Fields
+
+  - `body` - the response body; may be an iolist or a stream
+  - `halted?` - if the current response pipeline should be stopped prematurely
+  - `meta` - the response meta field, meaning depends on the status code
+  - `status` - the response status code, may be an integer or an atom (see below)
+  - `sent?` - if the response has been transmitted back to the client
+
+  ## Other Fields
+
+  - `assigns` - a generic map of application-defined data to be manipulated and rendered
+  - `private` - a generic map of library-defined data that should not be accessed by end-users
+
   """
   defstruct assigns: %{},
             body: [],
