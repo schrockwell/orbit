@@ -1,6 +1,6 @@
 defmodule Orbit.Static do
   @moduledoc """
-  Serves static content from the file system.
+  Serve static content from the file system.
 
   The `:path` or `*path` URL parameter must be specified when defining the route, e.g.
 

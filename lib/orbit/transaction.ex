@@ -1,6 +1,6 @@
 defmodule Orbit.Transaction do
   @moduledoc """
-  The request-response cycle.
+  Encapsulate the request-response cycle.
 
   Analgous to `%Plug.Conn{}`.
 
@@ -48,16 +48,28 @@ defmodule Orbit.Transaction do
           uri: %URI{}
         }
 
+  @doc """
+  Stops the request pipeline from further execution.
+  """
   def halt(%__MODULE__{} = trans), do: %{trans | halted?: true}
 
+  @doc """
+  Sets multiple assigns on the transaction.
+  """
   def assign(%__MODULE__{} = trans, assigns) do
     %{trans | assigns: Enum.into(assigns, trans.assigns)}
   end
 
+  @doc """
+  Sets a single assign on the transaction.
+  """
   def assign(%__MODULE__{} = trans, key, value) do
     %{trans | assigns: Map.put(trans.assigns, key, value)}
   end
 
+  @doc """
+  Sets a single private value on the transaction.
+  """
   def put_private(%__MODULE__{} = trans, key, value) when is_atom(key) do
     %{trans | private: Map.put(trans.private, key, value)}
   end
@@ -65,7 +77,7 @@ defmodule Orbit.Transaction do
   @doc """
   Puts the status and metadata for a response.
 
-  If the status code is non-successful, then the response body will be ignore and not sent.
+  If the status code is non-successful, then the response body will be ignored and not sent to the client.
 
   The status can be an integer or an atom. See `Orbit.Status` for a list of applicable status codes and
   convenience functions.

@@ -1,4 +1,36 @@
 defmodule Orbit.Router do
+  @moduledoc """
+  Sort out incoming requests.
+
+  ## Usage
+
+  `use Orbit.Router` injects the following into the module:
+
+      @behaviour Orbit.Pipe
+
+      import Orbit.Router
+
+      def call(trans, arg)
+
+  ## Example
+
+      defmodule MyApp.Router do
+        use Orbit.Router
+
+        pipe {Orbit.Controller, :push_layout}, {MyApp.LayoutView, :main}
+        pipe MyApp.SetCurrentUser
+
+        route "/static/*path", Orbit.Static, from: "priv/static"
+
+        group do
+          pipe MyApp.RequireCurrentUser
+
+          route "/messages", MyApp.MessageController, :index
+          route "/messages/:id", MyApp.MessageController, :show
+        end
+      end
+
+  """
   import Orbit.Transaction
 
   alias Orbit.Transaction
@@ -9,7 +41,7 @@ defmodule Orbit.Router do
       @behaviour Orbit.Pipe
       @pipeline [[]]
 
-      import Orbit.Router, only: [route: 2, route: 3, group: 1, pipe: 1, pipe: 2]
+      import Orbit.Router
 
       Module.register_attribute(__MODULE__, :routes, accumulate: true)
     end
@@ -26,6 +58,23 @@ defmodule Orbit.Router do
     end
   end
 
+  @doc """
+  Defines a route that sends a request to a designated pipe.
+
+  Path segments can contain parameters which are merged into the `params` field of the transaction. A wildcard parameter
+  can exist at the very end of a path match.
+
+      route "/users/:id/edit", UserController, :edit # => %{"id" => "123"}
+      route "/posts/*slug", PostController, :show # => %{"slug" => "favorite/cat/pictures"}
+
+  The `pipe` argument may be either:
+
+  - a module that implements `Orbit.Pipe`
+  - a function capture of a 2-arity function
+  - a `{module, function}` tuple that points to a 2-arity public function in a module
+
+  If no route matches the request path, the router responds with a `:not_found` status.
+  """
   defmacro route(path, pipe, arg \\ []) do
     path_spec = path_spec(path)
 
@@ -45,6 +94,33 @@ defmodule Orbit.Router do
     end
   end
 
+  @doc """
+  Defines a group of routes with a shared pipeline.
+
+  Groups have their own pipelines that append any existing pipes from parent groups, or from the router. Groups
+  can be nested.
+
+  ## Example
+
+      pipe SetCurrentUser
+
+      route "/", HomeController, :show
+      # ...more routes for all users...
+
+      group do
+        pipe RequireUser
+
+        route "/profile", ProfileController, :show
+        # ...more routes for authenticated users...
+
+        group do
+          pipe RequireAdminRole
+
+          route "/admin/users", UserController, :index
+          # ...more routes for authenticated admin users...
+        end
+      end
+  """
   defmacro group(do: block) do
     quote do
       @pipeline [[] | @pipeline]
@@ -55,6 +131,19 @@ defmodule Orbit.Router do
     end
   end
 
+  @doc """
+  Defines a pipe through which requests are processed.
+
+  The `pipe` argument may be either:
+
+  - a module that implements `Orbit.Pipe`
+  - a function capture of a 2-arity function
+  - a `{module, function}` tuple that points to a 2-arity public function in a module
+
+  If the pipe halts the request, the router does not process any further pipes or route matches.
+
+  Pipelines (sets of pipes) may be constructed by defining pipes inside `group/1` blocks.
+  """
   defmacro pipe(pipe, arg \\ []) do
     quote do
       @pipeline [

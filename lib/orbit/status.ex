@@ -1,6 +1,6 @@
 defmodule Orbit.Status do
   @moduledoc """
-  Canonical list of response status codes.
+  The canonical list of response status codes.
 
   This module contains helper functions for applying any status code to an `Orbit.Transaction`.
 

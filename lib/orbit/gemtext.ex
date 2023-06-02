@@ -1,6 +1,6 @@
 defmodule Orbit.Gemtext do
   @moduledoc """
-  Utility functions for processing Gemtext.
+  Utilities for rendering Gemtext.
   """
 
   @doc """

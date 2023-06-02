@@ -1,6 +1,6 @@
 defmodule Orbit.Controller do
   @moduledoc """
-  Processes requests and renders responses.
+  Process requests and render responses.
 
   ## Options
 
