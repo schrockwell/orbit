@@ -41,10 +41,10 @@ defmodule Orbit do
         use Orbit.Controller, view: MyAppGem.PageView
 
         import Orbit.Controller
-        import Orbit.Transaction
+        import Orbit.Request
 
-        def home(trans, _) do
-          trans
+        def home(req, _) do
+          req
           |> assign(name: "world")
           |> render()
         end

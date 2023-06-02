@@ -13,20 +13,20 @@ defmodule Orbit.Static do
   @behaviour Orbit.Pipe
 
   import Orbit.Controller
-  import Orbit.Transaction
+  import Orbit.Request
 
-  alias Orbit.Transaction
+  alias Orbit.Request
 
-  def call(%Transaction{} = trans, opts) do
+  def call(%Request{} = req, opts) do
     static_path = opts[:from] || "the :from option is required"
-    request_path = trans.params["path"] || raise "the :path param must be specified in the route"
+    request_path = req.params["path"] || raise "the :path param must be specified in the route"
 
     file_path = Path.join(static_path, request_path)
 
     if File.exists?(file_path) do
-      send_file(trans, file_path)
+      send_file(req, file_path)
     else
-      put_status(trans, :not_found)
+      put_status(req, :not_found)
     end
   end
 end

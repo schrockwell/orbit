@@ -4,7 +4,7 @@ defmodule Orbit.Handler do
   use ThousandIsland.Handler
 
   alias Orbit.Status
-  alias Orbit.Transaction
+  alias Orbit.Request
 
   alias ThousandIsland.Socket
 
@@ -20,30 +20,30 @@ defmodule Orbit.Handler do
         _ -> nil
       end
 
-    trans = %Transaction{client_cert: client_cert}
+    req = %Request{client_cert: client_cert}
 
-    {:continue, Map.merge(state, %{trans: trans, buffer: ""})}
+    {:continue, Map.merge(state, %{req: req, buffer: ""})}
   end
 
   @impl ThousandIsland.Handler
-  def handle_data(data, socket, %{trans: %Transaction{} = trans} = state) do
+  def handle_data(data, socket, %{req: %Request{} = req} = state) do
     buffer = state.buffer <> data
 
     with {:size, true} <- {:size, byte_size(buffer) <= @max_uri_size + @crlf_size},
          {:first_line, [uri_string, _ | _]} <- {:first_line, String.split(buffer, "\r\n")},
          {:uri, uri = %URI{scheme: "gemini"}} <- {:uri, URI.parse(uri_string)} do
-      trans = %{trans | uri: uri}
+      req = %{req | uri: uri}
       endpoint = state[:endpoint]
 
-      trans
+      req
       |> endpoint.call([])
       |> send_response(socket)
 
       {:close, state}
     else
       {:size, _} ->
-        trans
-        |> Transaction.put_status(:bad_request, "URI too long")
+        req
+        |> Request.put_status(:bad_request, "URI too long")
         |> send_response(socket)
 
         {:close, state}
@@ -52,16 +52,16 @@ defmodule Orbit.Handler do
         {:continue, %{state | buffer: buffer}}
 
       {:uri, _} ->
-        trans
-        |> Transaction.put_status(:bad_request, "Malformed URI")
+        req
+        |> Request.put_status(:bad_request, "Malformed URI")
         |> send_response(socket)
 
         {:close, state}
     end
   rescue
     error ->
-      trans
-      |> Transaction.put_status(:temporary_failure, "Internal server error")
+      req
+      |> Request.put_status(:temporary_failure, "Internal server error")
       |> send_response(socket)
 
       {:error, {error, __STACKTRACE__}, state}
@@ -74,36 +74,36 @@ defmodule Orbit.Handler do
 
   def handle_error(_reason, _socket, _state), do: :ok
 
-  defp send_response(%Transaction{sent?: true}, _socket) do
+  defp send_response(%Request{sent?: true}, _socket) do
     raise "response has already been sent"
   end
 
-  defp send_response(%Transaction{} = trans, socket) do
-    Socket.send(socket, response_header(trans))
+  defp send_response(%Request{} = req, socket) do
+    Socket.send(socket, response_header(req))
 
-    if Status.to_atom(trans.status) == :success do
-      send_body(trans, socket)
+    if Status.to_atom(req.status) == :success do
+      send_body(req, socket)
     end
 
-    %{trans | sent?: true}
+    %{req | sent?: true}
   end
 
-  defp response_header(%Transaction{meta: nil} = trans) do
-    [to_string(Status.to_integer(trans.status)), @crlf]
+  defp response_header(%Request{meta: nil} = req) do
+    [to_string(Status.to_integer(req.status)), @crlf]
   end
 
-  defp response_header(%Transaction{meta: meta} = trans) do
-    [to_string(Status.to_integer(trans.status)), " ", meta, @crlf]
+  defp response_header(%Request{meta: meta} = req) do
+    [to_string(Status.to_integer(req.status)), " ", meta, @crlf]
   end
 
-  defp send_body(%Transaction{body: %struct{} = stream}, socket)
+  defp send_body(%Request{body: %struct{} = stream}, socket)
        when struct in [Stream, File.Stream] do
     Enum.each(stream, fn line ->
       Socket.send(socket, line)
     end)
   end
 
-  defp send_body(%Transaction{body: body}, socket) do
+  defp send_body(%Request{body: body}, socket) do
     Socket.send(socket, body)
   end
 end

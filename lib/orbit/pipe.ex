@@ -11,13 +11,13 @@ defmodule Orbit.Pipe do
   turning it into a Pipe.
   """
 
-  alias Orbit.Transaction
+  alias Orbit.Request
 
   @doc """
   Handle a request.
 
-  Takes in a a Transaction, potentially modifies it, and returns a Transaction. The `arg` can be any value and is
+  Takes in a a Request, potentially modifies it, and returns a Request. The `arg` can be any value and is
   Pipe-dependenent.
   """
-  @callback call(trans :: Transaction.t(), arg :: any) :: Transaction.t()
+  @callback call(req :: Request.t(), arg :: any) :: Request.t()
 end

@@ -10,7 +10,7 @@ defmodule Orbit.Router do
 
       import Orbit.Router
 
-      def call(trans, arg)
+      def call(req, arg)
 
   ## Example
 
@@ -31,9 +31,9 @@ defmodule Orbit.Router do
       end
 
   """
-  import Orbit.Transaction
+  import Orbit.Request
 
-  alias Orbit.Transaction
+  alias Orbit.Request
 
   defmacro __using__(_) do
     quote do
@@ -49,8 +49,8 @@ defmodule Orbit.Router do
 
   defmacro __before_compile__(_) do
     quote do
-      def call(%Orbit.Transaction{} = trans, _arg) do
-        Orbit.Router.__call__(__MODULE__, trans, [])
+      def call(%Orbit.Request{} = req, _arg) do
+        Orbit.Router.__call__(__MODULE__, req, [])
       end
 
       @reversed_routes Enum.reverse(@routes)
@@ -61,7 +61,7 @@ defmodule Orbit.Router do
   @doc """
   Defines a route that sends a request to a designated pipe.
 
-  Path segments can contain parameters which are merged into the `params` field of the transaction. A wildcard parameter
+  Path segments can contain parameters which are merged into the `params` field of the request. A wildcard parameter
   can exist at the very end of a path match.
 
       route "/users/:id/edit", UserController, :edit # => %{"id" => "123"}
@@ -171,8 +171,8 @@ defmodule Orbit.Router do
   end
 
   @doc false
-  def __call__(router, %Transaction{} = trans, _arg) do
-    request_comps = components(trans.uri.path)
+  def __call__(router, %Request{} = req, _arg) do
+    request_comps = components(req.uri.path)
 
     route =
       Enum.find(router.__routes__(), fn route ->
@@ -183,12 +183,12 @@ defmodule Orbit.Router do
 
     if route do
       path_params = path_params(request_comps, route.path_spec)
-      all_params = URI.decode_query(trans.uri.query || "", path_params, :rfc3986)
-      trans = %{trans | params: all_params}
+      all_params = URI.decode_query(req.uri.query || "", path_params, :rfc3986)
+      req = %{req | params: all_params}
 
-      call_pipeline(trans, route.pipeline)
+      call_pipeline(req, route.pipeline)
     else
-      trans
+      req
       |> put_status(:not_found)
       |> halt()
     end
@@ -232,25 +232,25 @@ defmodule Orbit.Router do
     |> Map.new()
   end
 
-  defp call_pipe(mod, trans, arg) when is_atom(mod) do
-    mod.call(trans, arg)
+  defp call_pipe(mod, req, arg) when is_atom(mod) do
+    mod.call(req, arg)
   end
 
-  defp call_pipe({mod, fun}, trans, arg) when is_atom(mod) and is_atom(fun) do
-    apply(mod, fun, [trans, arg])
+  defp call_pipe({mod, fun}, req, arg) when is_atom(mod) and is_atom(fun) do
+    apply(mod, fun, [req, arg])
   end
 
-  defp call_pipe(fun, trans, arg) when is_function(fun, 2) do
-    fun.(trans, arg)
+  defp call_pipe(fun, req, arg) when is_function(fun, 2) do
+    fun.(req, arg)
   end
 
-  defp call_pipeline(trans, pipeline) do
-    Enum.reduce_while(pipeline, trans, fn {pipe, arg}, trans ->
-      case call_pipe(pipe, trans, arg) do
-        %Transaction{halted?: true} = next_trans ->
+  defp call_pipeline(req, pipeline) do
+    Enum.reduce_while(pipeline, req, fn {pipe, arg}, req ->
+      case call_pipe(pipe, req, arg) do
+        %Request{halted?: true} = next_trans ->
           {:halt, next_trans}
 
-        %Transaction{} = next_trans ->
+        %Request{} = next_trans ->
           {:cont, next_trans}
       end
     end)

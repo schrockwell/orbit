@@ -1,4 +1,4 @@
-defmodule Orbit.Transaction do
+defmodule Orbit.Request do
   @moduledoc """
   Encapsulate the request-response cycle.
 
@@ -51,27 +51,27 @@ defmodule Orbit.Transaction do
   @doc """
   Stops the request pipeline from further execution.
   """
-  def halt(%__MODULE__{} = trans), do: %{trans | halted?: true}
+  def halt(%__MODULE__{} = req), do: %{req | halted?: true}
 
   @doc """
-  Sets multiple assigns on the transaction.
+  Sets multiple assigns on the request.
   """
-  def assign(%__MODULE__{} = trans, assigns) do
-    %{trans | assigns: Enum.into(assigns, trans.assigns)}
+  def assign(%__MODULE__{} = req, assigns) do
+    %{req | assigns: Enum.into(assigns, req.assigns)}
   end
 
   @doc """
-  Sets a single assign on the transaction.
+  Sets a single assign on the request.
   """
-  def assign(%__MODULE__{} = trans, key, value) do
-    %{trans | assigns: Map.put(trans.assigns, key, value)}
+  def assign(%__MODULE__{} = req, key, value) do
+    %{req | assigns: Map.put(req.assigns, key, value)}
   end
 
   @doc """
-  Sets a single private value on the transaction.
+  Sets a single private value on the request.
   """
-  def put_private(%__MODULE__{} = trans, key, value) when is_atom(key) do
-    %{trans | private: Map.put(trans.private, key, value)}
+  def put_private(%__MODULE__{} = req, key, value) when is_atom(key) do
+    %{req | private: Map.put(req.private, key, value)}
   end
 
   @doc """
@@ -82,8 +82,8 @@ defmodule Orbit.Transaction do
   The status can be an integer or an atom. See `Orbit.Status` for a list of applicable status codes and
   convenience functions.
   """
-  def put_status(%__MODULE__{} = trans, status, meta \\ nil) do
-    %{trans | status: status, meta: meta}
+  def put_status(%__MODULE__{} = req, status, meta \\ nil) do
+    %{req | status: status, meta: meta}
   end
 
   @doc """
@@ -91,7 +91,7 @@ defmodule Orbit.Transaction do
 
   The MIME type is optional. If unspecified, clients will default to "text/gemini; charset=utf-8".
   """
-  def put_body(%__MODULE__{} = trans, body, mime_type \\ nil) do
-    %{trans | body: body, meta: mime_type}
+  def put_body(%__MODULE__{} = req, body, mime_type \\ nil) do
+    %{req | body: body, meta: mime_type}
   end
 end

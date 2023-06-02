@@ -2,7 +2,7 @@ defmodule Orbit.Status do
   @moduledoc """
   The canonical list of response status codes.
 
-  This module contains helper functions for applying any status code to an `Orbit.Transaction`.
+  This module contains helper functions for applying any status code to an `Orbit.Request`.
 
   When set manually, status codes may be specified by integer or atom. They can be coerced one way or the other
   with `to_atom/1` and `to_integer/1`.
@@ -29,7 +29,7 @@ defmodule Orbit.Status do
   | 62 | `:certificate_not_valid` |
   """
 
-  alias Orbit.Transaction
+  alias Orbit.Request
 
   @status_codes %{
     input: 10,
@@ -72,18 +72,18 @@ defmodule Orbit.Status do
   @doc """
   Responds with a success status containing body content.
   """
-  def success(%Transaction{} = trans, body, mime_type \\ nil) do
-    trans
-    |> Transaction.put_status(:success)
-    |> Transaction.put_body(body, mime_type)
+  def success(%Request{} = req, body, mime_type \\ nil) do
+    req
+    |> Request.put_status(:success)
+    |> Request.put_body(body, mime_type)
   end
 
   for {name, number} <- @status_codes, name != :success do
     @doc """
     Responds with the #{inspect(name)} (#{number}) status.
     """
-    def unquote(name)(%Transaction{} = trans, meta \\ nil) do
-      Transaction.put_status(trans, unquote(name), meta)
+    def unquote(name)(%Request{} = req, meta \\ nil) do
+      Request.put_status(req, unquote(name), meta)
     end
   end
 end
