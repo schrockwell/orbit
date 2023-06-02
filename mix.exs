@@ -22,6 +22,7 @@ defmodule Orbit.MixProject do
       name: "Orbit",
       source_url: "https://github.com/schrockwell/orbit",
       docs: [
+        main: "Orbit",
         extras: ["README.md"],
         logo: "logo.png"
       ]
