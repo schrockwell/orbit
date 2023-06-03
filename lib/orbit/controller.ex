@@ -151,8 +151,6 @@ defmodule Orbit.Controller do
   Renders the Gemtext view and layouts as a successful response.
   """
   def render(%Request{} = req) do
-    req = assign(req, :req, %{req | assigns: :no_assigns})
-
     if view = view(req) do
       render_views(req, [view | layouts(req)])
     else

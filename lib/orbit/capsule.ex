@@ -140,4 +140,20 @@ defmodule Orbit.Capsule do
   defp verify_peer(_cert, :valid_peer, state) do
     {:valid, state}
   end
+
+  @doc """
+  Returns metadata about the capsule's TLS listener.
+  """
+  def listener_info(capsule_pid) do
+    capsule_pid
+    |> Supervisor.which_children()
+    |> Enum.flat_map(fn
+      {{ThousandIsland, _ref}, pid, _, _} -> [pid]
+      _ -> []
+    end)
+    |> case do
+      [pid] -> ThousandIsland.listener_info(pid)
+      _ -> :error
+    end
+  end
 end
