@@ -1,0 +1,12 @@
+defmodule <%= @namespace %>.Router do
+  use Orbit.Router
+
+  alias <%= @namespace %>.LayoutView
+  alias <%= @namespace %>.PageController
+
+  pipe {Orbit.Controller, :push_layout}, {LayoutView, :main}
+
+  route "/static/*path", Orbit.Static, from: "priv/static"
+
+  route "/", PageController, :home
+end

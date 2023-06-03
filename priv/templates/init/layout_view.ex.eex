@@ -1,0 +1,5 @@
+defmodule <%= @namespace %>.LayoutView do
+  use <%= @namespace %>, :view
+
+  embed_templates "layout_view/*"
+end

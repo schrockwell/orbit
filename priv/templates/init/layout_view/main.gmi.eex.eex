@@ -1,0 +1,5 @@
+# My Awesome Application
+
+<%%= @inner_content %>
+
+© <%= DateTime.utc_now().year %> Gemini Astronaut

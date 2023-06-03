@@ -1,0 +1,11 @@
+defmodule <%= @namespace %>.PageController do
+  use <%= @namespace %>, :controller
+
+  view <%= @namespace %>.PageView
+
+  def home(req, _params) do
+    req
+    |> assign(name: "world")
+    |> render()
+  end
+end
