@@ -56,9 +56,6 @@ defmodule Mix.Tasks.Orbit.Init do
 
     3. Start the application and visit gemini://localhost/
     """)
-
-    # TODO: Output openssl directions
-    # TODO: Output child spec
   end
 
   defp copy_template({source_dir, dest_dir, assigns} = arg, source_path, dest_path) do
