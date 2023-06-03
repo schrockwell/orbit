@@ -6,7 +6,7 @@ defmodule Orbit do
 
   Create a new application:
 
-      mix new my_app --sup
+      $ mix new my_app --sup
 
   Add the dependency:
 
