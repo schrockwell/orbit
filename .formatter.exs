@@ -7,7 +7,8 @@
       pipe: 1,
       pipe: 2,
       route: 2,
-      route: 3
+      route: 3,
+      view: 1
     ]
   ]
 ]

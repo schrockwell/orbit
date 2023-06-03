@@ -4,21 +4,21 @@ defmodule Orbit.Controller do
 
   ## Options
 
-  - `:view` - a view module used to render actions
+  None.
 
   ## Usage
 
-  The `use Orbit.Controller` macro injects the following into the module:
-
-      @behaviour Orbit.Pipe
+  The `use Orbit.Controller` macro injects the following functions into the module:
 
       def call(request, arg)
       def action(request, action) # overridable
 
   The `call/2` function implements the `Orbit.Pipe` callback, making the controller behave like any other pipe. The
-  `arg` is the action name, as an atom. If the `:view` option has been specified, then the view is
-  automatically set by calling a function on the view module with the same name as the controller action. Finally,
-  `action/2` is called.
+  `arg` is the action name, as an atom, and is set to the `:action` assign. Any `pipe/2` definitions in this
+  controller are called first, and then `action/2` is called.
+
+
+  ### Overriding `action/2`
 
   The `action/2` function is overridable. It's an easy way to extend the controller's default behavior, or to customize
   the signature of the action functions to something other than `action_name(req, params)`. Its default implementation is:
@@ -26,6 +26,17 @@ defmodule Orbit.Controller do
       def action(req, action) do
         apply(__MODULE__, action, [req, req.params])
       end
+
+  ## Views
+
+  A controller can render responses directly in the controller action, or defer the rendering to an external view
+  module. Define the `view/1` pipe to set the view based on the controller action name.
+
+        view MyApp.MyView
+
+        def index(req, _params) do
+          render(req) # => MyApp.MyView.index(req.assigns)
+        end
 
   ## Layouts
 
@@ -70,7 +81,9 @@ defmodule Orbit.Controller do
 
       # Controller
       defmodule MyApp.UserController do
-        use Orbit.Controller, view: MyApp.UserView
+        use Orbit.Controller
+
+        view MyApp.UserView
 
         def index(req, _params), do: ...
         def show(req, %{"id" => id}), do: ...
@@ -87,25 +100,20 @@ defmodule Orbit.Controller do
   @orbit_view :orbit_view
   @orbit_layouts :orbit_layouts
 
-  defmacro __using__(opts) do
-    view_module = opts[:view]
-
+  defmacro __using__(_opts) do
     quote do
+      @before_compile Orbit.Controller
       @behaviour Orbit.Pipe
+
+      Module.register_attribute(__MODULE__, :pipeline, accumulate: true)
 
       @doc false
       @impl Orbit.Pipe
       def call(%Request{} = req, action) when is_atom(action) do
-        req =
-          if unquote(view_module) do
-            Orbit.Controller.put_new_view(req, fn ->
-              Function.capture(unquote(view_module), action, 1)
-            end)
-          else
-            req
-          end
-
-        action(req, action)
+        req
+        |> assign(action: action)
+        |> Orbit.Pipeline.call(__pipeline__())
+        |> action(action)
       end
 
       @doc false
@@ -115,6 +123,41 @@ defmodule Orbit.Controller do
 
       defoverridable action: 2
     end
+  end
+
+  defmacro __before_compile__(_env) do
+    quote do
+      def __pipeline__, do: @pipeline
+    end
+  end
+
+  @doc """
+  Define a pipe to run in the controller prior to the action.
+  """
+  defmacro pipe(pipe, arg \\ []) do
+    quote do
+      @pipeline {unquote(pipe), unquote(arg)}
+    end
+  end
+
+  @doc """
+  Define the view module for rendering controller actions.
+
+  This is a convenience wrapper that simply wraps `Orbit.Controller.put_action_view/2` as a `pipe/2` definition.
+  """
+  defmacro view(view_module) do
+    quote do
+      pipe(&Orbit.Controller.put_action_view/2, unquote(view_module))
+    end
+  end
+
+  @doc """
+  Sets the response view based on the controller action name.
+
+  The view rendered is `[view_module].[action]/2`.
+  """
+  def put_action_view(req, view_module) do
+    put_view(req, Function.capture(view_module, req.assigns.action, 1))
   end
 
   @doc """
@@ -135,7 +178,7 @@ defmodule Orbit.Controller do
   Puts a Gemtext view to be rendered if one has not already been set.
   """
   def put_new_view(%Request{} = req, fun) when is_function(fun, 0) do
-    if view(req) do
+    if get_view(req) do
       req
     else
       put_private(req, @orbit_view, fun.())
@@ -145,13 +188,13 @@ defmodule Orbit.Controller do
   @doc """
   Gets the Gemtext view to be rendered.
   """
-  def view(%Request{} = req), do: req.private[@orbit_view]
+  def get_view(%Request{} = req), do: req.private[@orbit_view]
 
   @doc """
   Renders the Gemtext view and layouts as a successful response.
   """
   def render(%Request{} = req) do
-    if view = view(req) do
+    if view = get_view(req) do
       render_views(req, [view | layouts(req)])
     else
       raise "view not set"

@@ -6,8 +6,6 @@ defmodule Orbit.Router do
 
   `use Orbit.Router` injects the following into the module:
 
-      @behaviour Orbit.Pipe
-
       import Orbit.Router
 
       def call(req, arg)
@@ -33,6 +31,7 @@ defmodule Orbit.Router do
   """
   import Orbit.Request
 
+  alias Orbit.Pipeline
   alias Orbit.Request
 
   defmacro __using__(_) do
@@ -186,7 +185,7 @@ defmodule Orbit.Router do
       all_params = URI.decode_query(req.uri.query || "", path_params, :rfc3986)
       req = %{req | params: all_params}
 
-      call_pipeline(req, route.pipeline)
+      Pipeline.call(req, route.pipeline)
     else
       req
       |> put_status(:not_found)
@@ -230,29 +229,5 @@ defmodule Orbit.Router do
       _ -> []
     end)
     |> Map.new()
-  end
-
-  defp call_pipe(mod, req, arg) when is_atom(mod) do
-    mod.call(req, arg)
-  end
-
-  defp call_pipe({mod, fun}, req, arg) when is_atom(mod) and is_atom(fun) do
-    apply(mod, fun, [req, arg])
-  end
-
-  defp call_pipe(fun, req, arg) when is_function(fun, 2) do
-    fun.(req, arg)
-  end
-
-  defp call_pipeline(req, pipeline) do
-    Enum.reduce_while(pipeline, req, fn {pipe, arg}, req ->
-      case call_pipe(pipe, req, arg) do
-        %Request{halted?: true} = next_trans ->
-          {:halt, next_trans}
-
-        %Request{} = next_trans ->
-          {:cont, next_trans}
-      end
-    end)
   end
 end

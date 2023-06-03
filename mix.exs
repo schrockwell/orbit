@@ -24,7 +24,28 @@ defmodule Orbit.MixProject do
       docs: [
         main: "Orbit",
         extras: ["README.md"],
-        logo: "logo.png"
+        logo: "logo.png",
+        groups_for_modules: [
+          Framework: [
+            Orbit,
+            Orbit.Capsule,
+            Orbit.Gemtext,
+            Orbit.Pipe,
+            Orbit.Request,
+            Orbit.Status
+          ],
+          Application: [
+            Orbit.Controller,
+            Orbit.Router,
+            Orbit.View
+          ],
+          Pipes: [
+            Orbit.Static
+          ],
+          Testing: [
+            OrbitTest
+          ]
+        ]
       ]
     ]
   end

@@ -18,7 +18,7 @@ defmodule Orbit.Request do
   - `status` - the response status code, may be an integer or an atom (see below)
   - `sent?` - if the response has been transmitted back to the client
 
-  ## Other Fields
+  ## Application Fields
 
   - `assigns` - a generic map of application-defined data to be manipulated and rendered
   - `private` - a generic map of library-defined data that should not be accessed by end-users

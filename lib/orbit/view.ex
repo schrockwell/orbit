@@ -11,12 +11,10 @@ defmodule Orbit.View do
 
   ## Usage
 
-  `use Orbit.View` injects the following in the module:
+  Add these imports to the view module:
 
       import Orbit.Gemtext, only: [sigil_G: 2]
       import Orbit.View
-
-      require EEx
 
   ## Example
 
@@ -34,14 +32,6 @@ defmodule Orbit.View do
         end
       end
   """
-  defmacro __using__(_) do
-    quote do
-      import Orbit.Gemtext, only: [sigil_G: 2]
-      import Orbit.View
-
-      require EEx
-    end
-  end
 
   @doc false
   defmacro render(view) do
@@ -108,6 +98,7 @@ defmodule Orbit.View do
         |> String.to_atom()
 
       quote do
+        require EEx
         EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns])
       end
     end)

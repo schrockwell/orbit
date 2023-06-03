@@ -38,10 +38,12 @@ defmodule Orbit do
 
       # lib/my_app_gem/page_controller.ex
       defmodule MyAppGem.PageController do
-        use Orbit.Controller, view: MyAppGem.PageView
+        use Orbit.Controller
 
         import Orbit.Controller
         import Orbit.Request
+
+        view MyAppGem.PageView
 
         def home(req, _) do
           req
