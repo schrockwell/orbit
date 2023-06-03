@@ -1,6 +1,15 @@
 defmodule Mix.Tasks.Orbit.Gen.Cert do
   @moduledoc """
-  todo
+  Create a self-signed certificate.
+
+      $ mix orbit.gen.cert [hostname]
+
+  The `hostname` is optional and defaults to "localhost".
+
+  The following files will be created:
+
+  - priv/cert.pem
+  - priv/key.pem
   """
 
   @shortdoc "Create a self-signed certificate"

@@ -1,18 +1,21 @@
 defmodule Mix.Tasks.Orbit.Init do
   @moduledoc """
-  todo
+  Initialize an Orbit capsule.
+
+      $ mix orbit.init NAME
+
+  The `NAME` argument is the CamelCase or underscore_case namespace under which the files will be generated, e.g.
+  "my_app_gem" or "MyAppGem".
   """
 
   @shortdoc "Initialize an Orbit capsule"
 
   use Mix.Task
 
-  alias Mix.Generator
-
   @impl Mix.Task
-  def run([namespace]) do
-    camelized = Macro.camelize(namespace)
-    underscored = Macro.underscore(namespace)
+  def run([name]) do
+    camelized = Macro.camelize(name)
+    underscored = Macro.underscore(name)
 
     source_dir = Path.join([:code.priv_dir(:orbit), "templates", "init"])
     dest_dir = "lib"
@@ -58,8 +61,12 @@ defmodule Mix.Tasks.Orbit.Init do
     """)
   end
 
+  def run(_) do
+    Mix.Task.run("help", ["orbit.init"])
+  end
+
   defp copy_template({source_dir, dest_dir, assigns} = arg, source_path, dest_path) do
-    Generator.copy_template(
+    Mix.Generator.copy_template(
       Path.join([source_dir] ++ List.wrap(source_path)),
       Path.join([dest_dir] ++ List.wrap(dest_path)),
       assigns
