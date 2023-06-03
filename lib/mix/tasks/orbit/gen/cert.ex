@@ -22,15 +22,17 @@ defmodule Mix.Tasks.Orbit.Gen.Cert do
   end
 
   def run([hostname]) do
-    Mix.shell().cmd(
-      "openssl req -new -x509 -days 365 -nodes -out priv/cert.pem -keyout priv/key.pem -subj \"/CN=localhost\""
-    )
-
-    Mix.shell().info("Generated certificate for #{hostname} in priv/{cert,key}.pem")
+    Mix.Generator.create_directory("priv")
 
     Mix.Generator.create_file(Path.join("priv", ".gitignore"), """
     cert.pem
     key.pem
     """)
+
+    Mix.shell().cmd(
+      "openssl req -new -x509 -days 365 -nodes -out priv/cert.pem -keyout priv/key.pem -subj \"/CN=localhost\""
+    )
+
+    Mix.shell().info("Generated certificate for #{hostname} in priv/{cert,key}.pem")
   end
 end
