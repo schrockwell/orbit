@@ -52,7 +52,7 @@ defmodule Mix.Tasks.Orbit.Init do
           {
             Orbit.Capsule,
             endpoint: #{camelized}.Router,
-            certfile: Path.join(Application.app_dir(:my_app, "priv"), "cert.pem"],
+            certfile: Path.join(Application.app_dir(:my_app, "priv"), "cert.pem"),
             keyfile: Path.join(Application.app_dir(:my_app, "priv"), "key.pem")
           }
         ]
