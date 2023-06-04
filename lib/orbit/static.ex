@@ -14,7 +14,6 @@ defmodule Orbit.Static do
 
   import Orbit.Controller
   import Orbit.Request
-  import Orbit.Status
 
   alias Orbit.Request
 
@@ -22,18 +21,28 @@ defmodule Orbit.Static do
     static_path = opts[:from] || "the :from option is required"
     request_path = req.params["path"] || raise "the :path param must be specified in the route"
 
-    file_path = Path.join(static_path, request_path)
+    static_segs = Path.split(static_path)
+    request_segs = String.split(request_path, "/")
+
+    req_dir? = String.ends_with?(req.uri.path, "/")
+    file_path = Path.join(static_segs ++ request_segs)
 
     cond do
+      # File exists -> return it
       File.exists?(file_path) and not File.dir?(file_path) ->
         send_file(req, file_path)
 
-      # TODO: redirect "dir" to "dir/" if "dir/index.gmi" exists
-      File.dir?(file_path) and File.exists?(Path.join(file_path, "index.gmi")) ->
+      # "/dir/" requested and "/dir/index.gmi" exists -> return "/dir/index.gmi"
+      File.dir?(file_path) and req_dir? and File.exists?(Path.join(file_path, "index.gmi")) ->
         send_file(req, Path.join(file_path, "index.gmi"))
 
+      # "/dir" requested and "/dir/index.gmi" exists -> redirect to "/dir/"
+      File.dir?(file_path) and not req_dir? and File.exists?(Path.join(file_path, "index.gmi")) ->
+        put_status(req, :redirect_permanent, req.uri.path <> "/")
+
+      # Not found
       :else ->
-        not_found(req)
+        put_status(req, :not_found)
     end
   end
 end
