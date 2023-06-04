@@ -14,6 +14,7 @@ defmodule Orbit.Static do
 
   import Orbit.Controller
   import Orbit.Request
+  import Orbit.Status
 
   alias Orbit.Request
 
@@ -23,10 +24,16 @@ defmodule Orbit.Static do
 
     file_path = Path.join(static_path, request_path)
 
-    if File.exists?(file_path) do
-      send_file(req, file_path)
-    else
-      put_status(req, :not_found)
+    cond do
+      File.exists?(file_path) and not File.dir?(file_path) ->
+        send_file(req, file_path)
+
+      # TODO: redirect "dir" to "dir/" if "dir/index.gmi" exists
+      File.dir?(file_path) and File.exists?(Path.join(file_path, "index.gmi")) ->
+        send_file(req, Path.join(file_path, "index.gmi"))
+
+      :else ->
+        not_found(req)
     end
   end
 end
