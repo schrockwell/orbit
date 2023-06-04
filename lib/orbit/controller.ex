@@ -262,7 +262,15 @@ defmodule Orbit.Controller do
   - `:mime_type` - the MIME type of the file; if unspecified, it is determined from the file extension
   """
   def send_file(%Request{} = req, path, opts \\ []) do
-    mime_type = opts[:mime_type] || MIME.from_path(path)
+    mime_type = opts[:mime_type] || mime_type(path)
     Status.success(req, File.stream!(path, [], 1024), mime_type)
+  end
+
+  defp mime_type(path) do
+    if Path.extname(path) == "gmi" do
+      Gemtext.mime_type()
+    else
+      MIME.from_path(path)
+    end
   end
 end
