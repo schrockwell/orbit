@@ -13,7 +13,7 @@ defmodule Orbit do
       # mix.exs
       def deps do
         [
-          {:orbit, "~> 0.1.0"}
+          {:orbit, "~> #{Orbit.MixProject.project()[:version]}"}
         ]
       end
 
