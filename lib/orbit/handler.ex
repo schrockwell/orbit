@@ -3,6 +3,7 @@ defmodule Orbit.Handler do
 
   use ThousandIsland.Handler
 
+  alias Orbit.ClientCertificate
   alias Orbit.Status
   alias Orbit.Request
 
@@ -16,7 +17,7 @@ defmodule Orbit.Handler do
   def handle_connection(socket, state) do
     client_cert =
       case :ssl.peercert(socket.socket) do
-        {:ok, der} -> :public_key.pkix_decode_cert(der, :plain)
+        {:ok, der} -> ClientCertificate.from_der(der)
         _ -> nil
       end
 
