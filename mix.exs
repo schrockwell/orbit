@@ -23,7 +23,7 @@ defmodule Orbit.MixProject do
       source_url: "https://github.com/schrockwell/orbit",
       docs: [
         main: "Orbit",
-        extras: ["README.md"],
+        extras: ["README.md": [title: "Readme"], "CHANGELOG.md": [title: "Changelog"]],
         logo: "logo.png",
         groups_for_modules: [
           Framework: [
