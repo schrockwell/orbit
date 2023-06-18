@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Orbit.Gen.Cert do
 
   The following files will be created:
 
-  - priv/cert.pem
-  - priv/key.pem
+  - `priv/tls/<hostname>.pem` - the certificate
+  - `priv/tls/<hostname>-key.pem` - the private key
   """
 
   @shortdoc "Create a self-signed certificate"
@@ -22,17 +22,14 @@ defmodule Mix.Tasks.Orbit.Gen.Cert do
   end
 
   def run([hostname]) do
-    Mix.Generator.create_directory("priv")
+    Mix.Generator.create_directory(Path.join(["priv", "tls"]))
 
-    Mix.Generator.create_file(Path.join("priv", ".gitignore"), """
-    cert.pem
-    key.pem
-    """)
+    Mix.Generator.create_file(Path.join(["priv", "tls", ".gitignore"]), "*")
 
     Mix.shell().cmd(
-      "openssl req -new -x509 -days 365 -nodes -out priv/cert.pem -keyout priv/key.pem -subj \"/CN=localhost\""
+      "openssl req -new -x509 -days 365 -nodes -out 'priv/tls/#{hostname}.pem' -keyout 'priv/tls/#{hostname}-key.pem' -subj \"/CN=#{hostname}\""
     )
 
-    Mix.shell().info("Generated certificate for #{hostname} in priv/{cert,key}.pem")
+    Mix.shell().info("Generated certificate for #{hostname} in priv/tls/{#{hostname},#{hostname}-key}.pem")
   end
 end

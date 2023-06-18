@@ -53,8 +53,8 @@ defmodule Mix.Tasks.Orbit.Init do
           {
             Orbit.Capsule,
             endpoint: #{camelized}.Router,
-            certfile: Path.join(Application.app_dir(:my_app, "priv"), "cert.pem"),
-            keyfile: Path.join(Application.app_dir(:my_app, "priv"), "key.pem")
+            certfile: Path.join([Application.app_dir(:my_app, "priv"), "tls", "localhost.pem"]),
+            keyfile: Path.join([Application.app_dir(:my_app, "priv"), "tls", "localhost-key.pem"])
           }
         ]
 
@@ -69,9 +69,16 @@ defmodule Mix.Tasks.Orbit.Init do
         defp elixirc_paths(:test), do: ["lib", "test/support"]
         defp elixirc_paths(_), do: ["lib"]
 
-    4. Start the application and visit gemini://localhost/
+    4. Add configuration to `.formatter.exs`:
+
+        [
+          import_deps: [:orbit]
+        ]
+
+    5. Start the application and visit `gemini://localhost/`
 
         mix orbit.server
+
     """)
   end
 
