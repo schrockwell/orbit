@@ -35,6 +35,10 @@ defmodule Orbit.Capsule do
   """
   use Supervisor
 
+  require Logger
+
+  @default_port 1965
+
   def start_link(init_arg) do
     Supervisor.start_link(__MODULE__, init_arg)
   end
@@ -43,7 +47,7 @@ defmodule Orbit.Capsule do
   def init(opts) do
     endpoint = opts[:endpoint] || "the :endpoint option is required"
 
-    port = opts[:port] || 1965
+    port = opts[:port] || @default_port
     ip = parse_address!(opts[:ip] || :any)
 
     ti_opts = [
@@ -63,7 +67,10 @@ defmodule Orbit.Capsule do
       {ThousandIsland, ti_opts}
     ]
 
-    Supervisor.init(children, strategy: :one_for_one)
+    with {:ok, sup} <- Supervisor.init(children, strategy: :one_for_one) do
+      Logger.info("Orbit capsule is listening at #{bound_address(ip, port)}")
+      {:ok, sup}
+    end
   end
 
   defp cert_opts!(opts) do
@@ -119,6 +126,18 @@ defmodule Orbit.Capsule do
   end
 
   defp parse_address!(ip), do: raise("invalid :ip option #{inspect(ip)}")
+
+  defp bound_address(ip, @default_port) do
+    "gemini://#{encode_address(ip)}/"
+  end
+
+  defp bound_address(ip, port) do
+    "gemini://#{encode_address(ip)}:#{port}/"
+  end
+
+  defp encode_address(:any), do: "0.0.0.0"
+  defp encode_address(:loopback), do: "127.0.0.1"
+  defp encode_address(ip), do: ip |> :inet.ntoa() |> to_string()
 
   # https://stackoverflow.com/a/32198900
   defp verify_peer(cert, {:bad_cert, :selfsigned_peer}, state) do

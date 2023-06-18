@@ -19,6 +19,7 @@ defmodule Orbit do
 
   Generate some files:
 
+      $ mix deps.get
       $ mix orbit.init my_app_gem
 
   Generate a self-signed certificate for localhost:

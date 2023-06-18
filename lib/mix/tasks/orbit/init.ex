@@ -18,23 +18,24 @@ defmodule Mix.Tasks.Orbit.Init do
     underscored = Macro.underscore(name)
 
     source_dir = Path.join([:code.priv_dir(:orbit), "templates", "init"])
-    dest_dir = "lib"
 
     assigns = [
       namespace: camelized
     ]
 
-    {source_dir, dest_dir, assigns}
-    |> copy_template("root.ex.eex", "#{underscored}.ex")
-    |> copy_template("router.ex.eex", [underscored, "router.ex"])
-    |> copy_template("page_controller.ex.eex", [underscored, "page_controller.ex"])
-    |> copy_template("page_view.ex.eex", [underscored, "page_view.ex"])
-    |> copy_template("layout_view.ex.eex", [underscored, "layout_view.ex"])
-    |> copy_template(["page_view", "home.gmi.eex.eex"], [underscored, "page_view", "home.gmi.eex"])
-    |> copy_template(["layout_view", "main.gmi.eex.eex"], [
+    {source_dir, assigns}
+    |> copy_template("root.ex.eex", ["lib", "#{underscored}.ex"])
+    |> copy_template("router.ex.eex", ["lib", underscored, "router.ex"])
+    |> copy_template("page_controller.ex.eex", ["lib", underscored, "page_controller.ex"])
+    |> copy_template("page_view.ex.eex", ["lib", underscored, "page_view.ex"])
+    |> copy_template("layout_view.ex.eex", ["lib", underscored, "layout_view.ex"])
+    |> copy_template(["page_view", "home.gmi.eex.eex"], ["lib", underscored, "page_view", "home.gmi.eex"])
+    |> copy_template(["layout_view", "main.gmi.eex.eex"], ["lib", underscored, "layout_view", "main.gmi.eex"])
+    |> copy_template(["test", "support", "gem_case.ex.eex"], ["test", "support", "gem_case.ex"])
+    |> copy_template(["test", "my_app_gem", "page_controller_test.exs.eex"], [
+      "test",
       underscored,
-      "layout_view",
-      "main.gmi.eex"
+      "page_controller_test.exs"
     ])
 
     Mix.shell().info("""
@@ -57,7 +58,20 @@ defmodule Mix.Tasks.Orbit.Init do
           }
         ]
 
-    3. Start the application and visit gemini://localhost/
+    3. Add the following to `mix.exs`:
+
+        def project do
+          [
+            elixirc_paths: elixirc_paths(Mix.env())
+          ]
+        end
+
+        defp elixirc_paths(:test), do: ["lib", "test/support"]
+        defp elixirc_paths(_), do: ["lib"]
+
+    4. Start the application and visit gemini://localhost/
+
+        mix orbit.server
     """)
   end
 
@@ -65,10 +79,10 @@ defmodule Mix.Tasks.Orbit.Init do
     Mix.Task.run("help", ["orbit.init"])
   end
 
-  defp copy_template({source_dir, dest_dir, assigns} = arg, source_path, dest_path) do
+  defp copy_template({source_dir, assigns} = arg, source_path, dest_path) do
     Mix.Generator.copy_template(
       Path.join([source_dir] ++ List.wrap(source_path)),
-      Path.join([dest_dir] ++ List.wrap(dest_path)),
+      Path.join(List.wrap(dest_path)),
       assigns
     )
 

@@ -4,8 +4,10 @@ defmodule <%= @namespace %>.PageController do
   view <%= @namespace %>.PageView
 
   def home(req, _params) do
+    name = if req.client_cert, do: req.client_cert.common_name, else: "world"
+
     req
-    |> assign(name: "world")
+    |> assign(name: name)
     |> render()
   end
 end
