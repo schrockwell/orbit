@@ -29,6 +29,7 @@ defmodule Orbit.MixProject do
           Framework: [
             Orbit,
             Orbit.Capsule,
+            Orbit.ClientCertificate,
             Orbit.Gemtext,
             Orbit.Pipe,
             Orbit.Request,

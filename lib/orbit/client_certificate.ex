@@ -1,8 +1,8 @@
 defmodule Orbit.ClientCertificate do
   @moduledoc """
-  Stores commonly-used fields from the TLS client certificate.
+  Commonly-used fields from the TLS client certificate.
 
-  The original `OTPCertificate` record is available in the `otp_certificate` field. The [X509](https://hexdocs.pm/x509/)
+  The original `:OTPCertificate` record is available in the `otp_certificate` field. The [X509](https://hexdocs.pm/x509/)
   library is included and can be used to extract additional values from the `otp_certificate`.
 
   ## Fields
@@ -11,9 +11,9 @@ defmodule Orbit.ClientCertificate do
   - `fingerprints` - a map of base-16 fingerprints for various hashes
     - `:sha` for SHA-1
     - `:sha256` for SHA-256
-  - `not_valid_after` - the UTC DateTime at the end of validitiy
-  - `not_valid_before` - the UTC DateTime at the beginning of validitiy
-  - `otp_certificate` - the underlying `OTPCertificate` record
+  - `not_valid_after` - the UTC `DateTime` at the end of validity
+  - `not_valid_before` - the UTC `DateTime` at the beginning of validity
+  - `otp_certificate` - the underlying `:OTPCertificate` record
   - `self_signed?` - if the certificate has been self-signed (issuer is the same as the subject)
   - `serial_number` - the serial number integer
 

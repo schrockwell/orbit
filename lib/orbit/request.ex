@@ -2,13 +2,13 @@ defmodule Orbit.Request do
   @moduledoc """
   Encapsulate the request-response cycle.
 
-  Analgous to `%Plug.Conn{}`.
+  Analogous to `%Plug.Conn{}`.
 
   ## Request Fields
 
-  - `client_cert` - the client TLS certificate
+  - `client_cert` - an `Orbit.ClientCertificate` for the client TLS certificate, if provided
   - `params` - combined request parameters from the URI and query params
-  - `uri` - the parsed request URI
+  - `uri` - the parsed request `URI` struct
 
   ## Response Fields
 
