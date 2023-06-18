@@ -13,7 +13,7 @@ defmodule Orbit.Gemtext do
 
   The `assigns` map must be in-scope.
 
-  A single trailing newline character `\n` will be trimmed, if it exists.
+  A single trailing newline character `\\n` will be trimmed, if it exists.
 
   ## Example
 
