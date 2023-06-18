@@ -94,4 +94,13 @@ defmodule Orbit.Request do
   def put_body(%__MODULE__{} = req, body, mime_type \\ nil) do
     %{req | body: body, meta: mime_type}
   end
+
+  @doc """
+  Respond with a success status containing body content.
+  """
+  def success(%__MODULE__{} = req, body, mime_type \\ nil) do
+    req
+    |> put_status(:success)
+    |> put_body(body, mime_type)
+  end
 end

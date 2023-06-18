@@ -94,7 +94,6 @@ defmodule Orbit.Controller do
   import Orbit.Internal, only: [is_view: 1]
 
   alias Orbit.Gemtext
-  alias Orbit.Status
   alias Orbit.Request
 
   @orbit_view :orbit_view
@@ -164,7 +163,7 @@ defmodule Orbit.Controller do
   Puts Gemtext content as the body of a successful response.
   """
   def gmi(%Request{} = req, body) do
-    Status.success(req, body, Gemtext.mime_type())
+    Request.success(req, body, Gemtext.mime_type())
   end
 
   @doc """
@@ -263,7 +262,7 @@ defmodule Orbit.Controller do
   """
   def send_file(%Request{} = req, path, opts \\ []) do
     mime_type = opts[:mime_type] || mime_type(path)
-    Status.success(req, File.stream!(path, [], 1024), mime_type)
+    Request.success(req, File.stream!(path, [], 1024), mime_type)
   end
 
   defp mime_type(path) do

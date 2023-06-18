@@ -29,8 +29,6 @@ defmodule Orbit.Status do
   | 62 | `:certificate_not_valid` |
   """
 
-  alias Orbit.Request
-
   @status_codes %{
     input: 10,
     sensitive_input: 11,
@@ -68,22 +66,4 @@ defmodule Orbit.Status do
   """
   def to_atom(status) when status in @status_values, do: @inverted_status_codes[status]
   def to_atom(status) when status in @status_keys, do: status
-
-  @doc """
-  Responds with a success status containing body content.
-  """
-  def success(%Request{} = req, body, mime_type \\ nil) do
-    req
-    |> Request.put_status(:success)
-    |> Request.put_body(body, mime_type)
-  end
-
-  for {name, number} <- @status_codes, name != :success do
-    @doc """
-    Responds with the #{inspect(name)} (#{number}) status.
-    """
-    def unquote(name)(%Request{} = req, meta \\ nil) do
-      Request.put_status(req, unquote(name), meta)
-    end
-  end
 end
