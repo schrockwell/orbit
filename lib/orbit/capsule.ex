@@ -74,19 +74,22 @@ defmodule Orbit.Capsule do
   end
 
   defp cert_opts!(opts) do
-    cond do
-      certfile = opts[:certfile] ->
-        [certfile: certfile]
+    opts =
+      cond do
+        certfile = opts[:certfile] ->
+          [certfile: certfile]
 
-      cert = opts[:cert] ->
-        [cert: cert]
+        cert = opts[:cert] ->
+          [cert: cert]
 
-      cert_pem = opts[:cert_pem] ->
-        [cert: decode_pem!(:Certificate, cert_pem)]
+        cert_pem = opts[:cert_pem] ->
+          [cert: decode_pem!(:Certificate, cert_pem)]
 
-      :else ->
-        raise "the certificate was not provided; specify one of: :cert, :cert_pem, :certfile"
-    end
+        :else ->
+          raise "the certificate was not provided; specify one of: :cert, :cert_pem, :certfile"
+      end
+
+    [[cacerts: :public_key.cacerts_get()] | opts]
   end
 
   defp key_opts!(opts) do
