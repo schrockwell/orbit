@@ -61,7 +61,7 @@ defmodule Orbit.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:thousand_island, "~> 0.6.7"},
+      {:thousand_island, "~> 1.0"},
       {:mime, "~> 2.0"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
       {:x509, "~> 0.8.7"}
