@@ -89,7 +89,12 @@ defmodule Orbit.Capsule do
           raise "the certificate was not provided; specify one of: :cert, :cert_pem, :certfile"
       end
 
-    [[cacerts: :public_key.cacerts_get()] | opts]
+    # :public_key.cacerts_get/0 is only available in OTP 25+
+    if function_exported?(:public_key, :cacerts_get, 0) do
+      [[cacerts: apply(:public_key, :cacerts_get, [])] | opts]
+    else
+      opts
+    end
   end
 
   defp key_opts!(opts) do
