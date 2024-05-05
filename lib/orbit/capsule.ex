@@ -90,10 +90,11 @@ defmodule Orbit.Capsule do
       end
 
     # :public_key.cacerts_get/0 is only available in OTP 25+
-    if function_exported?(:public_key, :cacerts_get, 0) do
-      [[cacerts: apply(:public_key, :cacerts_get, [])] | opts]
+    with {:module, _} <- Code.ensure_loaded(:public_key),
+         true <- function_exported?(:public_key, :cacerts_get, 0) do
+      [{:cacerts, apply(:public_key, :cacerts_get, [])} | opts]
     else
-      opts
+      _ -> opts
     end
   end
 
