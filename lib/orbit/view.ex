@@ -19,7 +19,8 @@ defmodule Orbit.View do
   ## Example
 
       defmodule MyApp.MyView do
-        use Orbit.View
+        import Orbit.Gemtext, only: [sigil_G: 2]
+        import Orbit.View
 
         embed_templates "my_view/*"
 
@@ -55,7 +56,7 @@ defmodule Orbit.View do
   end
 
   @doc """
-  Renders a view within another view.
+  Renders a view.
 
   The `assigns` and `block` arguments are optional.
 

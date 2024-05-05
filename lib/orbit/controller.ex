@@ -41,7 +41,7 @@ defmodule Orbit.Controller do
   ## Layouts
 
   Layouts are simply views that are provided an `@inner_content` assign which contains the content of the child view
-  to render within the layout. Layouts can be nested by pushing additional layouts to the Request.
+  to render within the layout.
 
       def outer_layout(assigns) do
         ~G\"\"\"
@@ -51,25 +51,14 @@ defmodule Orbit.Controller do
         \"\"\"
       end
 
-      def inner_layout(assigns) do
-        ~G\"\"\"
-        begin inner
-        <%= @inner_content %>
-        end inner
-        \"\"\"
-      end
-
       req
-      |> push_layout(&outer_layout/1)
-      |> push_layout(&inner_layout/1)
+      |> put_layout(&outer_layout/1)
       |> render()
 
       # =>
       \"\"\"
       begin outer
-      begin inner
       ...view...
-      end inner
       end outer
       \"\"\"
 
@@ -97,12 +86,14 @@ defmodule Orbit.Controller do
   alias Orbit.Request
 
   @orbit_view :orbit_view
-  @orbit_layouts :orbit_layouts
+  @orbit_layout :orbit_layout
 
   defmacro __using__(_opts) do
     quote do
       @before_compile Orbit.Controller
       @behaviour Orbit.Pipe
+
+      import Orbit.Controller
 
       Module.register_attribute(__MODULE__, :pipeline, accumulate: true)
 
@@ -174,17 +165,6 @@ defmodule Orbit.Controller do
   end
 
   @doc """
-  Puts a Gemtext view to be rendered if one has not already been set.
-  """
-  def put_new_view(%Request{} = req, fun) when is_function(fun, 0) do
-    if get_view(req) do
-      req
-    else
-      put_private(req, @orbit_view, fun.())
-    end
-  end
-
-  @doc """
   Gets the Gemtext view to be rendered.
   """
   def get_view(%Request{} = req), do: req.private[@orbit_view]
@@ -194,7 +174,7 @@ defmodule Orbit.Controller do
   """
   def render(%Request{} = req) do
     if view = get_view(req) do
-      render_views(req, [view | layouts(req)])
+      render_views(req, Enum.reject([view, get_layout(req)], &is_nil/1))
     else
       raise "view not set"
     end
@@ -211,38 +191,23 @@ defmodule Orbit.Controller do
   end
 
   @doc """
-  Adds a nested layout view.
+  Sets the layout view.
 
-  Layouts are rendered outer-to-inner, so the first layout pushed onto the stack will be the outermost
-  layout, and the next layout pushed will be nested inside that, and so on.
+  Layouts receive an `@inner_content` assign that contains the content of the child view to render within the layout.
 
   This is typically used directly in a router as a pipe, e.g.
 
-      pipe {Orbit.Controller, :push_layout}, {MyApp.LayoutView, :main}
+      pipe &Orbit.Controller.put_layout/2, &MyApp.LayoutView.main/1}
   """
-  def push_layout(%Request{} = req, layout) when is_view(layout) do
-    put_private(req, @orbit_layouts, [layout | layouts(req)])
-  end
-
-  @doc """
-  Removes the innermost layout view.
-  """
-  def pop_layout(%Request{} = req, _arg \\ []) do
-    put_private(req, @orbit_layouts, tl(layouts(req)))
-  end
-
-  @doc """
-  Removes all layout views.
-  """
-  def clear_layouts(%Request{} = req, _arg \\ []) do
-    put_private(req, @orbit_layouts, [])
+  def put_layout(%Request{} = req, layout) when is_view(layout) or is_nil(layout) do
+    put_private(req, @orbit_layout, layout)
   end
 
   @doc """
   Returns a list of all layouts.
   """
-  def layouts(%Request{} = req) do
-    req.private[@orbit_layouts] || []
+  def get_layout(%Request{} = req) do
+    req.private[@orbit_layout]
   end
 
   defp call_view({mod, fun}, assigns) when is_atom(mod) and is_atom(fun) do

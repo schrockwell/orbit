@@ -15,7 +15,7 @@ defmodule Orbit.Router do
       defmodule MyApp.Router do
         use Orbit.Router
 
-        pipe &Orbit.Controller.push_layout/2, {MyApp.LayoutView, :main}
+        pipe &Orbit.Controller.put_layout/2, &MyApp.LayoutView.main/1
         pipe MyApp.SetCurrentUser
 
         route "/static/*path", Orbit.Static, from: "priv/static"

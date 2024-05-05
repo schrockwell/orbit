@@ -38,7 +38,7 @@ defmodule Orbit.Gemtext do
   # Elixir herdocs (""") have a trailing "\n" which has will result in an undesired newline, so let's remove it
   defp trim_trailing_newline(string) do
     if String.ends_with?(string, "\n") do
-      String.slice(string, 0..-2)
+      String.slice(string, 0..-2//1)
     else
       string
     end
