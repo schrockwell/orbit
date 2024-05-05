@@ -15,7 +15,7 @@ defmodule Orbit.Router do
       defmodule MyApp.Router do
         use Orbit.Router
 
-        pipe {Orbit.Controller, :push_layout}, {MyApp.LayoutView, :main}
+        pipe &Orbit.Controller.push_layout/2, {MyApp.LayoutView, :main}
         pipe MyApp.SetCurrentUser
 
         route "/static/*path", Orbit.Static, from: "priv/static"
@@ -68,13 +68,12 @@ defmodule Orbit.Router do
 
   The `pipe` argument may be either:
 
-  - a module that implements `Orbit.Pipe`
-  - a function capture of a 2-arity function
-  - a `{module, function}` tuple that points to a 2-arity public function in a module
+  - a module that implements the `Orbit.Pipe` behaviour
+  - a 2-arity function capture that accepts the request and an arugment
 
   If no route matches the request path, the router responds with a `:not_found` status.
   """
-  defmacro route(path, pipe, arg \\ []) do
+  defmacro route(path, pipe, arg \\ nil) do
     path_spec = path_spec(path)
 
     quote do
