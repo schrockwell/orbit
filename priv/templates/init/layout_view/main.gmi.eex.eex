@@ -2,4 +2,4 @@
 
 <%%= @inner_content %>
 
-© <%= DateTime.utc_now().year %> Gemini Astronaut
+© <%%= DateTime.utc_now().year %> Gemini Astronaut
