@@ -64,7 +64,8 @@ defmodule Orbit.MixProject do
       {:thousand_island, "~> 1.0"},
       {:mime, "~> 2.0"},
       {:ex_doc, "~> 0.27", only: :dev, runtime: false},
-      {:x509, "~> 0.8.7"}
+      {:x509, "~> 0.8.7"},
+      {:mix_test_watch, "~> 1.0", only: [:dev, :test], runtime: false}
     ]
   end
 end
