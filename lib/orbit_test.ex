@@ -19,8 +19,14 @@ defmodule OrbitTest do
   - `:router` - the router to handle the request; defaults to `@router`
   """
   defmacro request(path_or_url, opts \\ []) do
-    quote do
-      OrbitTest.__request__(unquote(opts)[:router] || @router, unquote(path_or_url), unquote(opts))
+    if Module.has_attribute?(__CALLER__.module, :router) do
+      quote do
+        OrbitTest.__request__(@router, unquote(path_or_url), unquote(opts))
+      end
+    else
+      quote do
+        OrbitTest.__request__(unquote(opts)[:router], unquote(path_or_url), unquote(opts))
+      end
     end
   end
 
