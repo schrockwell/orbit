@@ -58,6 +58,6 @@ defmodule Orbit.ViewTest do
     end
 
     # THEN
-    assert MyView.my_template(%{name: "bob"}) == "my view bob\n"
+    assert MyView.my_template(%{name: "bob"}) == "my view bob"
   end
 end

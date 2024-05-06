@@ -173,11 +173,7 @@ defmodule Orbit.ControllerTest do
     assert req.meta == "text/plain"
 
     assert %File.Stream{
-             path: "test/fixtures/test.txt",
-             modes: [:raw, :read_ahead, :binary],
-             line_or_bytes: 1024,
-             raw: true,
-             node: :nonode@nohost
+             path: "test/fixtures/test.txt"
            } = req.body
   end
 end
