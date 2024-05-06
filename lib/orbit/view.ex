@@ -100,7 +100,7 @@ defmodule Orbit.View do
 
       quote do
         require EEx
-        EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns])
+        EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns], trim: true)
       end
     end)
   end
