@@ -98,9 +98,18 @@ defmodule Orbit.View do
         |> hd()
         |> String.to_atom()
 
+      quoted = EEx.compile_file(template_path, trim: true)
+
       quote do
         require EEx
-        EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns], trim: true)
+
+        # Previously: EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns], trim: true)
+        def unquote(template_name)(var!(assigns)) do
+          # No-op to shut up warnings on templates that don't access assigns
+          var!(assigns)
+
+          unquote(quoted)
+        end
       end
     end)
   end
