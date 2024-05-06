@@ -2,12 +2,12 @@ defmodule Orbit.View do
   @moduledoc """
   Render Gemtext content.
 
-  A "view" is any 1-arity function that accepts a map of assigns and returns a string of rendered Gemtext.
+  A **template** is any 1-arity function that accepts an `assigns` map and returns a string of rendered Gemtext.
 
   The `~G` sigil is used to precompile EEx templates as strings when an `assigns` variable or argument is
   in scope.
 
-  Views can be defined as functions, or embedded from `.gmi.eex` files into view module via `embed_templates/1`.
+  Templates can be defined as functions, or embedded from `.gmi.eex` files into view module via `embed_templates/1`.
 
   ## Usage
 
@@ -35,38 +35,38 @@ defmodule Orbit.View do
   """
 
   @doc false
-  defmacro render(view) do
+  defmacro render(template) do
     quote do
-      unquote(view).(%{})
+      unquote(template).(%{})
     end
   end
 
   @doc false
-  defmacro render(view, do: block) do
+  defmacro render(template, do: block) do
     quote do
-      unquote(view).(%{inner_content: unquote(block)})
+      unquote(template).(%{inner_content: unquote(block)})
     end
   end
 
   @doc false
-  defmacro render(view, assigns) do
+  defmacro render(template, assigns) do
     quote do
-      unquote(view).(Enum.into(unquote(assigns), %{}))
+      unquote(template).(Enum.into(unquote(assigns), %{}))
     end
   end
 
   @doc """
-  Renders a view.
+  Renders a template.
 
   The `assigns` and `block` arguments are optional.
 
-  If a block is passed, its contents are renderd and set to `@inner_content` assign of the view.
+  If a block is passed, its contents are renderd and set to `@inner_content` assign of the template.
 
   ## Examples
 
-      <%= render &my_view/1 %>
+      <%= render &my_template/1 %>
 
-      <%= render &my_view/1, title: @title %>
+      <%= render &my_template/1, title: @title %>
 
       <%= render &my_component/1 do %>
         inner content
@@ -79,9 +79,9 @@ defmodule Orbit.View do
   end
 
   @doc """
-  Define view functions from external files.
+  Define template functions from external files.
 
-  Every file found in the wildcard `path` is compiled as EEx and injected as a view function into the view
+  Every file found in the wildcard `path` is compiled as EEx and injected as a template function into the view
   module, using the file basename as the function name. For example, `index.gmi.eex` will be defined as
   `def index(assigns)`.
   """
