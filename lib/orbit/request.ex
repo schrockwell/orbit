@@ -87,20 +87,137 @@ defmodule Orbit.Request do
   end
 
   @doc """
-  Puts the body and MIME type for a successful response.
+  Puts the body for a successful response.
 
-  The MIME type is optional. If unspecified, clients will default to "text/gemini; charset=utf-8".
+  The MIME type is specified via the `meta` argument of `put_status/3`.
   """
-  def put_body(%__MODULE__{} = req, body, mime_type \\ nil) do
-    %{req | body: body, meta: mime_type}
+  def put_body(%__MODULE__{} = req, body) do
+    %{req | body: body}
   end
 
   @doc """
-  Respond with a success status containing body content.
+  Responds with a :input status.
   """
-  def success(%__MODULE__{} = req, body, mime_type \\ nil) do
-    req
-    |> put_status(:success)
-    |> put_body(body, mime_type)
+  def input(req, prompt \\ nil) do
+    put_status(req, :input, prompt)
+  end
+
+  @doc """
+  Responds with a :sensitive_input status.
+  """
+  def sensitive_input(req, prompt \\ nil) do
+    put_status(req, :sensitive_input, prompt)
+  end
+
+  @doc """
+  Responds with a :success status.
+  """
+  def success(req, mime_type \\ nil) do
+    put_status(req, :success, mime_type)
+  end
+
+  @doc """
+  Responds with a :redirect_temporary status.
+  """
+  def redirect_temporary(req, uri \\ nil) do
+    put_status(req, :redirect_temporary, uri)
+  end
+
+  @doc """
+  Responds with a :redirect_permanent status.
+  """
+  def redirect_permanent(req, uri \\ nil) do
+    put_status(req, :redirect_permanent, uri)
+  end
+
+  @doc """
+  Responds with a :temporary_failure status.
+  """
+  def temporary_failure(req, message \\ nil) do
+    put_status(req, :temporary_failure, message)
+  end
+
+  @doc """
+  Responds with a :server_unavailable status.
+  """
+  def server_unavailable(req, message \\ nil) do
+    put_status(req, :server_unavailable, message)
+  end
+
+  @doc """
+  Responds with a :cgi_error status.
+  """
+  def cgi_error(req, message \\ nil) do
+    put_status(req, :cgi_error, message)
+  end
+
+  @doc """
+  Responds with a :proxy_error status.
+  """
+  def proxy_error(req, message \\ nil) do
+    put_status(req, :proxy_error, message)
+  end
+
+  @doc """
+  Responds with a :slow_down status.
+  """
+  def slow_down(req, message \\ nil) do
+    put_status(req, :slow_down, message)
+  end
+
+  @doc """
+  Responds with a :permanent_failure status.
+  """
+  def permanent_failure(req, message \\ nil) do
+    put_status(req, :permanent_failure, message)
+  end
+
+  @doc """
+  Responds with a :not_found status.
+  """
+  def not_found(req, message \\ nil) do
+    put_status(req, :not_found, message)
+  end
+
+  @doc """
+  Responds with a :gone status.
+  """
+  def gone(req, message \\ nil) do
+    put_status(req, :gone, message)
+  end
+
+  @doc """
+  Responds with a :proxy_request_refused status.
+  """
+  def proxy_request_refused(req, message \\ nil) do
+    put_status(req, :proxy_request_refused, message)
+  end
+
+  @doc """
+  Responds with a :bad_request status.
+  """
+  def bad_request(req, message \\ nil) do
+    put_status(req, :bad_request, message)
+  end
+
+  @doc """
+  Responds with a :client_certificate_required status.
+  """
+  def client_certificate_required(req, message \\ nil) do
+    put_status(req, :client_certificate_required, message)
+  end
+
+  @doc """
+  Responds with a :certificate_not_authorized status.
+  """
+  def certificate_not_authorized(req, message \\ nil) do
+    put_status(req, :certificate_not_authorized, message)
+  end
+
+  @doc """
+  Responds with a :certificate_not_valid status.
+  """
+  def certificate_not_valid(req, message \\ nil) do
+    put_status(req, :certificate_not_valid, message)
   end
 end

@@ -154,7 +154,9 @@ defmodule Orbit.Controller do
   Puts Gemtext content as the body of a successful response.
   """
   def gmi(%Request{} = req, body) do
-    Request.success(req, body, Gemtext.mime_type())
+    req
+    |> Request.put_body(body)
+    |> Request.success(Gemtext.mime_type())
   end
 
   @doc """
@@ -228,7 +230,10 @@ defmodule Orbit.Controller do
   """
   def send_file(%Request{} = req, path, opts \\ []) do
     mime_type = opts[:mime_type] || mime_type(path)
-    Request.success(req, File.stream!(path, [], 1024), mime_type)
+
+    req
+    |> Request.success(mime_type)
+    |> put_body(File.stream!(path, [], 1024))
   end
 
   defp mime_type(path) do
