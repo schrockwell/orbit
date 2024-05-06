@@ -182,7 +182,14 @@ defmodule Orbit.Router do
     if route do
       path_params = path_params(request_comps, route.path_spec)
       all_params = URI.decode_query(req.uri.query || "", path_params, :rfc3986)
-      req = %{req | params: all_params}
+
+      coerced_params =
+        case Map.to_list(all_params) do
+          [{query, ""}] -> %{"_query" => query}
+          _ -> all_params
+        end
+
+      req = %{req | params: coerced_params}
 
       Pipeline.call(req, route.pipeline)
     else
