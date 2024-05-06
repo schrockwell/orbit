@@ -8,7 +8,7 @@ defmodule Orbit.ClientCertificate do
   ## Fields
 
   - `common_name` - the common name (CN) string
-  - `fingerprints` - a map of base-16 fingerprints for various hashes
+  - `fingerprints` - a map of binary fingerprints for various hash algorithms
     - `:sha` for SHA-1
     - `:sha256` for SHA-256
   - `not_valid_after` - the UTC `DateTime` at the end of validity
@@ -36,8 +36,8 @@ defmodule Orbit.ClientCertificate do
           not_valid_after: DateTime.t(),
           self_signed?: boolean(),
           fingerprints: %{
-            sha: String.t(),
-            sha256: String.t()
+            sha: binary,
+            sha256: binary
           }
         }
 
@@ -54,7 +54,7 @@ defmodule Orbit.ClientCertificate do
 
         fingerprints =
           for algo <- [:sha, :sha256], into: %{} do
-            {algo, algo |> :crypto.hash(der) |> Base.encode16()}
+            {algo, :crypto.hash(algo, der)}
           end
 
         %__MODULE__{
