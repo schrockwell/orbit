@@ -3,6 +3,7 @@ defmodule Orbit.Handler do
 
   use ThousandIsland.Handler
 
+  require Logger
   alias Orbit.ClientCertificate
   alias Orbit.Status
   alias Orbit.Request
@@ -61,9 +62,23 @@ defmodule Orbit.Handler do
     end
   rescue
     error ->
-      req
-      |> Request.put_status(:temporary_failure, "Internal server error")
-      |> send_response(socket)
+      if state[:debug_errors] do
+        req
+        |> Orbit.Controller.gmi("""
+        # 💥 Internal server error 💥
+
+        ## (#{inspect(error.__struct__)}) #{Exception.message(error)}
+
+        ```
+        #{Exception.format_stacktrace(__STACKTRACE__)}
+        ```
+        """)
+        |> send_response(socket)
+      else
+        req
+        |> Request.put_status(:temporary_failure, "Internal server error")
+        |> send_response(socket)
+      end
 
       {:error, {error, __STACKTRACE__}, state}
   end
@@ -77,6 +92,10 @@ defmodule Orbit.Handler do
 
   defp send_response(%Request{sent?: true}, _socket) do
     raise "response has already been sent"
+  end
+
+  defp send_response(%Request{status: nil}, _socket) do
+    raise "response status not set"
   end
 
   defp send_response(%Request{} = req, socket) do

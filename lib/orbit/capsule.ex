@@ -22,6 +22,7 @@ defmodule Orbit.Capsule do
 
   - `:ip` - the IP to listen on; could be `:any`, `:loopback`, or an address string; defaults to `:any`
   - `:port` - the port to listen on; defaults to 1965
+  - `:debug_errors` - if true, returns stack traces for server errors; defaults to false
 
   ## Example Child Specification
 
@@ -49,11 +50,12 @@ defmodule Orbit.Capsule do
 
     port = opts[:port] || @default_port
     ip = parse_address!(opts[:ip] || :any)
+    debug_errors = Keyword.get(opts, :debug_errors, false)
 
     ti_opts = [
       port: port,
       handler_module: Orbit.Handler,
-      handler_options: %{endpoint: endpoint},
+      handler_options: %{endpoint: endpoint, debug_errors: debug_errors},
       transport_module: ThousandIsland.Transports.SSL,
       transport_options:
         [

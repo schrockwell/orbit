@@ -174,13 +174,14 @@ defmodule Orbit.Controller do
   """
   def render(%Request{} = req) do
     if view = get_view(req) do
-      render_views(req, Enum.reject([view, get_layout(req)], &is_nil/1))
+      views = Enum.reject([view, get_layout(req)], &is_nil/1)
+      render_nested_views(req, views)
     else
       raise "view not set"
     end
   end
 
-  defp render_views(req, views) do
+  defp render_nested_views(req, views) do
     body =
       Enum.reduce(views, nil, fn inner_view, inner_content ->
         inner_assigns = Map.put(req.assigns, :inner_content, inner_content)
