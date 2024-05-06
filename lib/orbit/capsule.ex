@@ -58,8 +58,9 @@ defmodule Orbit.Capsule do
       transport_options:
         [
           ip: ip,
-          # TODO: Is it okay to skip client certificate verification?
-          verify: :verify_none
+          verify_fun: {&verify_peer/3, %{}},
+          verify: :verify_peer,
+          fail_if_no_peer_cert: false
         ] ++ cert_opts!(opts) ++ key_opts!(opts)
     ]
 
@@ -147,6 +148,27 @@ defmodule Orbit.Capsule do
   defp encode_address(:any), do: "0.0.0.0"
   defp encode_address(:loopback), do: "127.0.0.1"
   defp encode_address(ip), do: ip |> :inet.ntoa() |> to_string()
+
+  # https://stackoverflow.com/a/32198900
+  defp verify_peer(cert, {:bad_cert, :selfsigned_peer}, state) do
+    {:valid, Map.put(state, :cert, cert)}
+  end
+
+  defp verify_peer(_cert, {:bad_cert, _} = event, _state) do
+    {:fail, event}
+  end
+
+  defp verify_peer(_cert, {:extension, _}, state) do
+    {:unknown, state}
+  end
+
+  defp verify_peer(_cert, :valid, state) do
+    {:valid, state}
+  end
+
+  defp verify_peer(_cert, :valid_peer, state) do
+    {:valid, state}
+  end
 
   @doc """
   Returns metadata about the capsule's TLS listener.
