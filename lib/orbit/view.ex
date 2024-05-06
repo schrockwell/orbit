@@ -103,6 +103,8 @@ defmodule Orbit.View do
       quote do
         require EEx
 
+        @external_resource unquote(template_path)
+
         # Previously: EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns], trim: true)
         def unquote(template_name)(var!(assigns)) do
           # No-op to shut up warnings on templates that don't access assigns
