@@ -140,23 +140,23 @@ defmodule Orbit.ControllerTest do
     assert layout == (&TestView.layout/1)
   end
 
-  test "put_view/2 puts a Gemtext view to be rendered" do
+  test "put_template/2 puts a Gemtext template to be rendered" do
     # GIVEN
     req = %Request{}
 
     # WHEN
-    req = Orbit.Controller.put_view(req, &TestView.show/1)
+    req = Orbit.Controller.put_template(req, &TestView.show/1)
 
     # THEN
     assert req.private[:orbit_view] == (&TestView.show/1)
   end
 
-  test "get_view/1 gets the Gemtext view to be rendered" do
+  test "get_template/1 gets the Gemtext view to be rendered" do
     # GIVEN
-    req = Orbit.Controller.put_view(%Request{}, &TestView.show/1)
+    req = Orbit.Controller.put_template(%Request{}, &TestView.show/1)
 
     # WHEN
-    view = Orbit.Controller.get_view(req)
+    view = Orbit.Controller.get_template(req)
 
     # THEN
     assert view == (&TestView.show/1)

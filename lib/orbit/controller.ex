@@ -133,11 +133,11 @@ defmodule Orbit.Controller do
   @doc """
   Define the view module for rendering controller actions.
 
-  This is a convenience wrapper that simply wraps `Orbit.Controller.put_action_view/2` as a `pipe/2` definition.
+  This is a convenience wrapper that simply wraps `Orbit.Controller.put_action_template/2` as a `pipe/2` definition.
   """
   defmacro view(view_module) do
     quote do
-      pipe(&Orbit.Controller.put_action_view/2, unquote(view_module))
+      pipe(&Orbit.Controller.put_action_template/2, unquote(view_module))
     end
   end
 
@@ -146,8 +146,8 @@ defmodule Orbit.Controller do
 
   The view rendered is `[view_module].[action]/2`.
   """
-  def put_action_view(req, view_module) do
-    put_view(req, Function.capture(view_module, req.assigns.action, 1))
+  def put_action_template(req, view_module) do
+    put_template(req, Function.capture(view_module, req.assigns.action, 1))
   end
 
   @doc """
@@ -162,20 +162,20 @@ defmodule Orbit.Controller do
   @doc """
   Puts the Gemtext view to be rendered.
   """
-  def put_view(%Request{} = req, view) when is_function(view, 1) do
+  def put_template(%Request{} = req, view) when is_function(view, 1) do
     put_private(req, @orbit_view, view)
   end
 
   @doc """
-  Gets the Gemtext view to be rendered.
+  Gets the Gemtext template to be rendered.
   """
-  def get_view(%Request{} = req), do: req.private[@orbit_view]
+  def get_template(%Request{} = req), do: req.private[@orbit_view]
 
   @doc """
   Renders the Gemtext view and layouts as a successful response.
   """
   def render(%Request{} = req) do
-    if view = get_view(req) do
+    if view = get_template(req) do
       views = Enum.reject([view, get_layout(req)], &is_nil/1)
       render_nested_views(req, views)
     else
