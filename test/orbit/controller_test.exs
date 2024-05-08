@@ -167,13 +167,13 @@ defmodule Orbit.ControllerTest do
     req = %Request{}
 
     # WHEN
-    req = Orbit.Controller.send_file(req, "test/fixtures/test.txt")
+    req = Orbit.Controller.send_file(req, "test/support/test.txt")
 
     # THEN
     assert req.meta == "text/plain"
 
     assert %File.Stream{
-             path: "test/fixtures/test.txt"
+             path: "test/support/test.txt"
            } = req.body
   end
 end

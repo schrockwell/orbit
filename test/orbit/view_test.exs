@@ -54,7 +54,7 @@ defmodule Orbit.ViewTest do
     # GIVEN
     defmodule MyView do
       import Orbit.View
-      embed_templates("../fixtures/my_view/*")
+      embed_templates("../support/my_view/*")
     end
 
     # THEN

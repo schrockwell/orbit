@@ -108,7 +108,7 @@ defmodule OrbitTest do
     {:ok, socket} = :ssl.connect(host, port, verify: :verify_none, active: false)
 
     # Send request
-    :ok = :ssl.send(socket, ~c"gemini://#{host}#{path}\r\n")
+    :ok = :ssl.send(socket, ~c"gemini://#{host}:#{port}#{path}\r\n")
 
     # Read response
     {:ok, response} = read_ssl_response(socket, [])

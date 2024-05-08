@@ -20,7 +20,7 @@ defmodule Orbit.Capsule do
 
   ### Optional
 
-  - `:ip` - the IP to listen on; could be `:any`, `:loopback`, or an address string; defaults to `:any`
+  - `:ip` - the IP to listen on; defaults to "127.0.0.1"
   - `:port` - the port to listen on; defaults to 1965
   - `:debug_errors` - if true, returns stack traces for server errors; defaults to false
 
@@ -40,16 +40,16 @@ defmodule Orbit.Capsule do
 
   @default_port 1965
 
-  def start_link(init_arg) do
-    Supervisor.start_link(__MODULE__, init_arg)
+  def start_link(opts) do
+    Supervisor.start_link(__MODULE__, opts)
   end
 
   @impl true
   def init(opts) do
-    endpoint = opts[:endpoint] || "the :endpoint option is required"
+    endpoint = opts[:endpoint] || raise("the :endpoint option is required")
 
     port = opts[:port] || @default_port
-    ip = parse_address!(opts[:ip] || :any)
+    ip = parse_address!(opts[:ip] || "127.0.0.1")
     debug_errors = Keyword.get(opts, :debug_errors, false)
 
     ti_opts = [
@@ -124,9 +124,6 @@ defmodule Orbit.Capsule do
     end
   end
 
-  defp parse_address!(:any), do: :any
-  defp parse_address!(:loopback), do: :loopback
-
   defp parse_address!(ip) when is_binary(ip) do
     ip
     |> String.to_charlist()
@@ -147,8 +144,6 @@ defmodule Orbit.Capsule do
     "gemini://#{encode_address(ip)}:#{port}/"
   end
 
-  defp encode_address(:any), do: "0.0.0.0"
-  defp encode_address(:loopback), do: "127.0.0.1"
   defp encode_address(ip), do: ip |> :inet.ntoa() |> to_string()
 
   # https://stackoverflow.com/a/32198900
