@@ -53,7 +53,7 @@ defmodule OrbitTest do
       client_cert: opts[:client_cert]
     }
 
-    router.call(request, [])
+    Orbit.Pipe.call(router, request, [])
   end
 
   @doc """
@@ -97,5 +97,37 @@ defmodule OrbitTest do
     otp_cert
     |> X509.Certificate.to_der()
     |> ClientCertificate.from_der()
+  end
+
+  def tls_request(host, path, opts \\ []) do
+    port = opts[:port] || 1965
+
+    host = ~c"#{host}"
+
+    # Open TLS client
+    {:ok, socket} = :ssl.connect(host, port, verify: :verify_none, active: false)
+
+    # Send request
+    :ok = :ssl.send(socket, ~c"gemini://#{host}#{path}\r\n")
+
+    # Read response
+    {:ok, response} = read_ssl_response(socket, [])
+
+    # Convert to String
+    :erlang.iolist_to_binary(response)
+  end
+
+  defp read_ssl_response(socket, acc) do
+    case :ssl.recv(socket, 0, 5000) do
+      {:ok, data} ->
+        read_ssl_response(socket, acc ++ [data])
+
+      {:error, :closed} ->
+        # Combine all parts of the message
+        {:ok, acc |> Enum.join("")}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 end

@@ -32,13 +32,13 @@ defmodule Orbit.Handler do
     buffer = state.buffer <> data
 
     with {:size, true} <- {:size, byte_size(buffer) <= @max_uri_size + @crlf_size},
-         {:first_line, [uri_string, _ | _]} <- {:first_line, String.split(buffer, "\r\n")},
+         {:first_line, [uri_string, _ | _]} <- {:first_line, String.split(buffer, @crlf)},
          {:uri, uri = %URI{scheme: "gemini"}} <- {:uri, URI.parse(uri_string)} do
       req = %{req | uri: uri}
       endpoint = state[:endpoint]
 
-      req
-      |> endpoint.call([])
+      endpoint
+      |> Orbit.Pipe.call(req, [])
       |> send_response(socket)
 
       {:close, state}

@@ -20,4 +20,12 @@ defmodule Orbit.Pipe do
   Pipe-dependenent.
   """
   @callback call(req :: Request.t(), arg :: any) :: Request.t()
+
+  def call(mod, req, arg) when is_atom(mod) do
+    mod.call(req, arg)
+  end
+
+  def call(fun, req, arg) when is_function(fun, 2) do
+    fun.(req, arg)
+  end
 end
