@@ -169,4 +169,32 @@ defmodule Orbit.CapsuleTest do
                 message: "invalid :ip option {127, 0, 0, 1}"
               }, _}, _}} = result
   end
+
+  test "self-signed client certificate", %{config: config} do
+    # GIVEN
+    ssl_opts = [
+      certfile: "test/support/tls/client.pem",
+      keyfile: "test/support/tls/client-key.pem"
+    ]
+
+    parent = self()
+
+    config =
+      Keyword.put(config, :entrypoint, fn req, _ ->
+        send(parent, {:request, req})
+        gmi(req, "Hello, world!")
+      end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    resp = tls_request("localhost", "/whatever", ssl: ssl_opts)
+
+    # THEN
+    assert resp == "20 text/gemini; charset=utf-8\r\nHello, world!"
+    assert_received {:request, %Orbit.Request{} = req}
+    assert %Orbit.ClientCertificate{common_name: "client"} = req.client_cert
+  end
 end

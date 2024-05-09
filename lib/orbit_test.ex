@@ -101,11 +101,13 @@ defmodule OrbitTest do
 
   def tls_request(host, path, opts \\ []) do
     port = opts[:port] || 1965
+    ssl_opts = opts[:ssl] || []
 
     host = ~c"#{host}"
 
     # Open TLS client
-    {:ok, socket} = :ssl.connect(host, port, verify: :verify_none, active: false)
+    ssl_opts = Keyword.merge([verify: :verify_none, active: false], ssl_opts)
+    {:ok, socket} = :ssl.connect(host, port, ssl_opts)
 
     # Send request
     :ok = :ssl.send(socket, ~c"gemini://#{host}:#{port}#{path}\r\n")

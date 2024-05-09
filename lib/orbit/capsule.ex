@@ -207,12 +207,12 @@ defmodule Orbit.Capsule do
     {:unknown, state}
   end
 
-  defp verify_peer(_cert, :valid, state) do
-    {:valid, state}
+  defp verify_peer(cert, :valid, state) do
+    {:valid, Map.put(state, :cert, cert)}
   end
 
-  defp verify_peer(_cert, :valid_peer, state) do
-    {:valid, state}
+  defp verify_peer(cert, :valid_peer, state) do
+    {:valid, Map.put(state, :cert, cert)}
   end
 
   @doc """
