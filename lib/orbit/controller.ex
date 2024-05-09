@@ -80,7 +80,7 @@ defmodule Orbit.Controller do
 
   """
   import Orbit.Request
-  import Orbit.Internal, only: [is_view: 1]
+  import Orbit.Internal, only: [is_template: 1]
 
   alias Orbit.Gemtext
   alias Orbit.Request
@@ -202,7 +202,7 @@ defmodule Orbit.Controller do
 
       pipe &Orbit.Controller.put_layout/2, &MyApp.LayoutView.main/1}
   """
-  def put_layout(%Request{} = req, layout) when is_view(layout) or is_nil(layout) do
+  def put_layout(%Request{} = req, layout) when is_template(layout) or is_nil(layout) do
     put_private(req, @orbit_layout, layout)
   end
 
