@@ -200,6 +200,7 @@ defmodule Orbit.Capsule do
   end
 
   defp verify_peer(_cert, {:bad_cert, _} = event, _state) do
+    # TODO: Respond with :certificate_not_valid status
     {:fail, event}
   end
 

@@ -134,7 +134,10 @@ defmodule Orbit.CapsuleTest do
 
   test "listener_info/1", %{config: config} do
     # WHEN
-    {:ok, pid} = start_supervised({Orbit.Capsule, config})
+    {{:ok, pid}, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        start_supervised({Orbit.Capsule, config})
+      end)
 
     info = Orbit.Capsule.listener_info(pid)
 
