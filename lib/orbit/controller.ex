@@ -84,8 +84,9 @@ defmodule Orbit.Controller do
 
   alias Orbit.Request
 
-  @orbit_view :orbit_view
+  @orbit_template :orbit_template
   @orbit_layout :orbit_layout
+  @orbit_action :orbit_action
 
   defmacro __using__(_opts) do
     quote do
@@ -100,7 +101,7 @@ defmodule Orbit.Controller do
       @impl Orbit.Pipe
       def call(%Request{} = req, action) when is_atom(action) do
         req
-        |> assign(action: action)
+        |> put_private(unquote(@orbit_action), action)
         |> Orbit.Pipeline.call(__pipeline__())
         |> action(action)
       end
@@ -130,23 +131,19 @@ defmodule Orbit.Controller do
   end
 
   @doc """
-  Define the view module for rendering controller actions.
+  Sets the view module for rendering controller actions.
 
-  This is a convenience wrapper that simply wraps `Orbit.Controller.put_action_template/2` as a `pipe/2` definition.
+  The template is based on the controller action name.
   """
   defmacro view(view_module) do
     quote do
-      pipe(&Orbit.Controller.put_action_template/2, unquote(view_module))
+      pipe(&Orbit.Controller.__put_controller_template__/2, unquote(view_module))
     end
   end
 
-  @doc """
-  Sets the response view based on the controller action name.
-
-  The view rendered is `[view_module].[action]/2`.
-  """
-  def put_action_template(req, view_module) do
-    put_template(req, Function.capture(view_module, req.assigns.action, 1))
+  @doc false
+  def __put_controller_template__(req, view_module) do
+    put_template(req, Function.capture(view_module, req.private[@orbit_action], 1))
   end
 
   @doc """
@@ -161,14 +158,14 @@ defmodule Orbit.Controller do
   @doc """
   Puts the Gemtext view to be rendered.
   """
-  def put_template(%Request{} = req, view) when is_function(view, 1) do
-    put_private(req, @orbit_view, view)
+  def put_template(%Request{} = req, template) when is_template(template) do
+    put_private(req, @orbit_template, template)
   end
 
   @doc """
   Gets the Gemtext template to be rendered.
   """
-  def get_template(%Request{} = req), do: req.private[@orbit_view]
+  def get_template(%Request{} = req), do: req.private[@orbit_template]
 
   @doc """
   Renders the Gemtext view and layouts as a successful response.

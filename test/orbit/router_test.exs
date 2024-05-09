@@ -74,7 +74,7 @@ defmodule Orbit.RouterTest do
     resp = request("/test_groups_1", router: TestRouter)
 
     # THEN
-    assert body(resp) == inspect(%{action: :inspect, foo: :bar, bat: :baz})
+    assert body(resp) == inspect(%{foo: :bar, bat: :baz})
   end
 
   test "pipes are applied in nested groups" do
@@ -82,7 +82,7 @@ defmodule Orbit.RouterTest do
     resp = request("/test_groups_2", router: TestRouter)
 
     # THEN
-    assert body(resp) == inspect(%{ping: :pong, action: :inspect, foo: :bar, bat: :baz})
+    assert body(resp) == inspect(%{ping: :pong, foo: :bar, bat: :baz})
   end
 
   test "routes with parameters" do

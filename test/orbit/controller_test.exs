@@ -164,7 +164,7 @@ defmodule Orbit.ControllerTest do
     req = Orbit.Controller.put_template(req, &TestView.show/1)
 
     # THEN
-    assert req.private[:orbit_view] == (&TestView.show/1)
+    assert req.private[:orbit_template] == (&TestView.show/1)
   end
 
   test "get_template/1 gets the Gemtext view to be rendered" do
