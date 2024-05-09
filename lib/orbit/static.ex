@@ -1,14 +1,15 @@
 defmodule Orbit.Static do
   @moduledoc """
-  Serve static content from the file system.
+  Serve static content from "priv/".
 
   The `:path` or `*path` URL parameter must be specified when defining the route, e.g.
 
-      route "/static/*path", Orbit.Static, from: "priv/static"
+      route "/static/*path", Orbit.Static, from: :my_app
 
   ## Options
 
-  - `:from` (required) - the directory to serve
+  - `:from` (required) - the name of the OTP application where the static files are located
+  - `:dir` - the name of the directory within priv/ where the static files are located; defaults to "static"
   """
   @behaviour Orbit.Pipe
 
@@ -18,8 +19,11 @@ defmodule Orbit.Static do
   alias Orbit.Request
 
   def call(%Request{} = req, opts) do
-    static_path = opts[:from] || "the :from option is required"
+    otp_app = opts[:from] || "the :from option is required"
+    dir = opts[:dir] || "static"
     request_path = req.params["path"] || raise "the :path param must be specified in the route"
+
+    static_path = otp_app |> :code.priv_dir() |> Path.join(dir)
 
     static_segs = Path.split(static_path)
     request_segs = String.split(request_path, "/")
