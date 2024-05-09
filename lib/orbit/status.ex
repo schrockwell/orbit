@@ -66,4 +66,9 @@ defmodule Orbit.Status do
   """
   def to_atom(status) when status in @status_values, do: @inverted_status_codes[status]
   def to_atom(status) when status in @status_keys, do: status
+
+  @doc """
+  Returns a map of all status codes with atom keys.
+  """
+  def statuses, do: @status_codes
 end
