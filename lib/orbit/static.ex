@@ -28,7 +28,6 @@ defmodule Orbit.Static do
     static_segs = Path.split(static_path)
     request_segs = String.split(request_path, "/")
 
-    req_dir? = String.ends_with?(req.uri.path, "/")
     file_path = Path.join(static_segs ++ request_segs)
 
     cond do
@@ -36,13 +35,9 @@ defmodule Orbit.Static do
       File.exists?(file_path) and not File.dir?(file_path) ->
         send_file(req, file_path)
 
-      # "/dir/" requested and "/dir/index.gmi" exists -> return "/dir/index.gmi"
-      File.dir?(file_path) and req_dir? and File.exists?(Path.join(file_path, "index.gmi")) ->
+      # "/dir" or "/dir/" requested, and "/dir/index.gmi" exists -> return "/dir/index.gmi"
+      File.dir?(file_path) and File.exists?(Path.join(file_path, "index.gmi")) ->
         send_file(req, Path.join(file_path, "index.gmi"))
-
-      # "/dir" requested and "/dir/index.gmi" exists -> redirect to "/dir/"
-      File.dir?(file_path) and not req_dir? and File.exists?(Path.join(file_path, "index.gmi")) ->
-        put_status(req, :redirect_permanent, req.uri.path <> "/")
 
       # Not found
       :else ->
