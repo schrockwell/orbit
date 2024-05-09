@@ -19,7 +19,7 @@ Orbit borrows a lot of ideas from Plug and Phoenix.
   - `Orbit.Pipe` - the behaviour for request middleware (like `Plug`)
   - `Orbit.Router` - defines pipelines and routes
   - `Orbit.Controller` - processes requests and render views
-  - `Orbit.View` - renders Gemtext content
+  - `Orbit.Gemtext` - renders Gemtext content
 
 - Some additional niceties:
 

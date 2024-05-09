@@ -30,7 +30,6 @@ defmodule Orbit.MixProject do
             Orbit,
             Orbit.Capsule,
             Orbit.ClientCertificate,
-            Orbit.Gemtext,
             Orbit.Pipe,
             Orbit.Request,
             Orbit.Status
@@ -38,7 +37,7 @@ defmodule Orbit.MixProject do
           Application: [
             Orbit.Controller,
             Orbit.Router,
-            Orbit.View
+            Orbit.Gemtext
           ],
           Pipes: [
             Orbit.Static

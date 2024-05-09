@@ -82,7 +82,6 @@ defmodule Orbit.Controller do
   import Orbit.Request
   import Orbit.Internal, only: [is_template: 1]
 
-  alias Orbit.Gemtext
   alias Orbit.Request
 
   @orbit_view :orbit_view
@@ -156,7 +155,7 @@ defmodule Orbit.Controller do
   def gmi(%Request{} = req, body) do
     req
     |> Request.put_body(body)
-    |> Request.success(Gemtext.mime_type())
+    |> Request.success(MIME.type("gmi"))
   end
 
   @doc """

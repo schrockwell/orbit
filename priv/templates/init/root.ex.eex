@@ -15,8 +15,7 @@ defmodule <%= @namespace %> do
 
   def view do
     quote do
-      import Orbit.Gemtext, only: [sigil_G: 2]
-      import Orbit.View
+      import Orbit.Gemtext
     end
   end
 end

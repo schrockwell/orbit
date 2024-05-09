@@ -1,8 +1,7 @@
-defmodule Orbit.ViewTest do
+defmodule Orbit.GemtextTest do
   use ExUnit.Case
 
   import Orbit.Gemtext
-  import Orbit.View
 
   test "render/1 renders a view" do
     # GIVEN
@@ -53,7 +52,7 @@ defmodule Orbit.ViewTest do
   test "embed_templates/1 embeds templates" do
     # GIVEN
     defmodule MyView do
-      import Orbit.View
+      import Orbit.Gemtext
       embed_templates("../support/my_view/*")
     end
 
