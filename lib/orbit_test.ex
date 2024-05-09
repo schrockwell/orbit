@@ -97,6 +97,7 @@ defmodule OrbitTest do
     otp_cert
     |> X509.Certificate.to_der()
     |> ClientCertificate.from_der()
+    |> elem(1)
   end
 
   def tls_request(host, path, opts \\ []) do

@@ -17,8 +17,10 @@ defmodule Orbit.Handler do
   @impl ThousandIsland.Handler
   def handle_connection(socket, state) do
     client_cert =
-      case :ssl.peercert(socket.socket) do
-        {:ok, der} -> ClientCertificate.from_der(der)
+      with {:ok, der} <- :ssl.peercert(socket.socket),
+           {:ok, cert} <- ClientCertificate.from_der(der) do
+        cert
+      else
         _ -> nil
       end
 

@@ -57,15 +57,16 @@ defmodule Orbit.ClientCertificate do
             {algo, :crypto.hash(algo, der)}
           end
 
-        %__MODULE__{
-          common_name: otp_cert |> X509.Certificate.subject() |> X509.RDNSequence.get_attr("CN") |> hd(),
-          fingerprints: fingerprints,
-          not_valid_after: not_after,
-          not_valid_before: not_before,
-          otp_certificate: otp_cert,
-          self_signed?: X509.Certificate.issuer(otp_cert) == X509.Certificate.subject(otp_cert),
-          serial_number: otp_cert |> X509.Certificate.serial()
-        }
+        {:ok,
+         %__MODULE__{
+           common_name: otp_cert |> X509.Certificate.subject() |> X509.RDNSequence.get_attr("CN") |> hd(),
+           fingerprints: fingerprints,
+           not_valid_after: not_after,
+           not_valid_before: not_before,
+           otp_certificate: otp_cert,
+           self_signed?: X509.Certificate.issuer(otp_cert) == X509.Certificate.subject(otp_cert),
+           serial_number: otp_cert |> X509.Certificate.serial()
+         }}
 
       error ->
         error
