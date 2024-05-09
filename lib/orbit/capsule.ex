@@ -2,11 +2,45 @@ defmodule Orbit.Capsule do
   @moduledoc """
   The main endpoint supervisor.
 
-  ## Options
+  ## Usage
+
+  Define the module:
+
+      # lib/my_app_gem/capsule.ex
+      defmodule MyAppGem.Capsule do
+        use Orbit.Capsule, otp_app: :my_app
+        use Orbit.Router
+
+        # ...define pipes and routes...
+      end
+
+  Then add config:
+
+      # config/config.exs
+      config :my_app, MyAppGem.Capsule,
+        certfile: "path/to/cert.pem",
+        keyfile: "path/to/key.pem"
+
+  Finally, add it to the supervision tree:
+
+      # lib/my_app/application.ex
+      children = [
+        MyAppGem.Capsule
+      ]
+
+  ## Options for `use Orbit.Capsule`
 
   ### Required
 
-  - `:endpoint` - the `Orbit.Pipe` entry point that gets called on every request, typically an `Orbit.Router`
+  - `:otp_app` - the OTP application name
+
+  ### Optional
+
+  - `:entrypoint` - the initial pipe to handle incoming requests; defaults to the calling module
+
+  ## Configuration
+
+  ### Required
 
   - One of:
     - `:certfile` - path to a TLS certificatefile in the PEM format
@@ -20,18 +54,9 @@ defmodule Orbit.Capsule do
 
   ### Optional
 
-  - `:ip` - the IP to listen on; defaults to "127.0.0.1"
-  - `:port` - the port to listen on; defaults to 1965
-  - `:debug_errors` - if true, returns stack traces for server errors; defaults to false
-
-  ## Example Child Specification
-
-      {
-        Orbit.Capsule,
-        endpoint: MyApp.GemRouter,
-        certfile: Path.join(Application.app_dir(:my_app, "priv"), "cert.pem"],
-        keyfile: Path.join(Application.app_dir(:my_app, "priv"), "key.pem")
-      }
+  - `:ip` - the IP to listen on; defaults to `"0.0.0.0"`
+  - `:port` - the port to listen on; defaults to `1965`
+  - `:debug_errors` - if true, returns stack traces for server errors; defaults to `false`
 
   """
   use Supervisor
@@ -40,22 +65,45 @@ defmodule Orbit.Capsule do
 
   @default_port 1965
 
+  defmacro __using__(opts) do
+    otp_app = opts[:otp_app] || raise("the :otp_app option is required")
+    entrypoint = opts[:entrypoint] || __CALLER__.module
+
+    quote do
+      @otp_app unquote(otp_app)
+      @entrypoint unquote(entrypoint)
+
+      def config do
+        default_config = [
+          otp_app: @otp_app,
+          entrypoint: @entrypoint
+        ]
+
+        Keyword.merge(default_config, Application.get_env(@otp_app, __MODULE__, []))
+      end
+
+      def child_spec(_) do
+        Orbit.Capsule.child_spec(config())
+      end
+    end
+  end
+
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts)
   end
 
   @impl true
   def init(opts) do
-    endpoint = opts[:endpoint] || raise("the :endpoint option is required")
+    entrypoint = opts[:entrypoint] || raise("the :entrypoint option is required")
 
     port = opts[:port] || @default_port
-    ip = parse_address!(opts[:ip] || "127.0.0.1")
+    ip = parse_address!(opts[:ip] || "0.0.0.0")
     debug_errors = Keyword.get(opts, :debug_errors, false)
 
     ti_opts = [
       port: port,
       handler_module: Orbit.Handler,
-      handler_options: %{endpoint: endpoint, debug_errors: debug_errors},
+      handler_options: %{entrypoint: entrypoint, debug_errors: debug_errors},
       transport_module: ThousandIsland.Transports.SSL,
       transport_options:
         [

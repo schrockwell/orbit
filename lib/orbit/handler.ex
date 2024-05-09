@@ -35,9 +35,9 @@ defmodule Orbit.Handler do
          {:first_line, [uri_string, _ | _]} <- {:first_line, String.split(buffer, @crlf)},
          {:uri, uri = %URI{scheme: "gemini"}} <- {:uri, URI.parse(uri_string)} do
       req = %{req | uri: uri}
-      endpoint = state[:endpoint]
+      entrypoint = state[:entrypoint]
 
-      endpoint
+      entrypoint
       |> Orbit.Pipe.call(req, [])
       |> send_response(socket)
 

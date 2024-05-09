@@ -5,15 +5,15 @@ defmodule Orbit.CapsuleTest do
   import OrbitTest
 
   setup do
-    endpoint = fn req, _ ->
+    entrypoint = fn req, _ ->
       gmi(req, "Hello, world!")
     end
 
     {:ok,
      %{
-       endpoint: endpoint,
+       entrypoint: entrypoint,
        config: [
-         endpoint: endpoint,
+         entrypoint: entrypoint,
          certfile: "test/support/tls/localhost.pem",
          keyfile: "test/support/tls/localhost-key.pem"
        ]
@@ -32,10 +32,10 @@ defmodule Orbit.CapsuleTest do
     assert resp == "20 text/gemini; charset=utf-8\r\nHello, world!"
   end
 
-  test "it can be started with cert and key PEM", %{endpoint: endpoint} do
+  test "it can be started with cert and key PEM", %{entrypoint: entrypoint} do
     # GIVEN
     config = [
-      endpoint: endpoint,
+      entrypoint: entrypoint,
       cert_pem: File.read!("test/support/tls/localhost.pem"),
       key_pem: File.read!("test/support/tls/localhost-key.pem")
     ]
@@ -53,12 +53,12 @@ defmodule Orbit.CapsuleTest do
 
   test "it can be started with a DER-encoded cert and key" do
     # GIVEN
-    endpoint = fn req, _ ->
+    entrypoint = fn req, _ ->
       gmi(req, "Hello, world!")
     end
 
     config = [
-      endpoint: endpoint,
+      entrypoint: entrypoint,
       cert: File.read!("test/support/tls/localhost.pem") |> :public_key.pem_decode() |> hd() |> elem(1),
       key: File.read!("test/support/tls/localhost-key.pem") |> :public_key.pem_decode() |> hd() |> elem(1)
     ]
@@ -118,9 +118,9 @@ defmodule Orbit.CapsuleTest do
               }, _}, _}} = result
   end
 
-  test "raises if an endpoint is not provided", %{config: config} do
+  test "raises if an entrypoint is not provided", %{config: config} do
     # GIVEN
-    config = Keyword.delete(config, :endpoint)
+    config = Keyword.delete(config, :entrypoint)
 
     # WHEN
     result = start_supervised({Orbit.Capsule, config})
@@ -128,7 +128,7 @@ defmodule Orbit.CapsuleTest do
     # THEN
     assert {:error,
             {{%RuntimeError{
-                message: "the :endpoint option is required"
+                message: "the :entrypoint option is required"
               }, _}, _}} = result
   end
 
@@ -139,7 +139,7 @@ defmodule Orbit.CapsuleTest do
     info = Orbit.Capsule.listener_info(pid)
 
     # THEN
-    assert info == {:ok, {{127, 0, 0, 1}, 1965}}
+    assert info == {:ok, {{0, 0, 0, 0}, 1965}}
   end
 
   test "invalid :ip string", %{config: config} do
