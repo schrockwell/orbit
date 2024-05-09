@@ -187,7 +187,7 @@ defmodule Orbit.Controller do
     body =
       Enum.reduce(views, nil, fn inner_view, inner_content ->
         inner_assigns = Map.put(req.assigns, :inner_content, inner_content)
-        call_view(inner_view, inner_assigns)
+        inner_view.(inner_assigns)
       end)
 
     gmi(req, body)
@@ -213,14 +213,6 @@ defmodule Orbit.Controller do
     req.private[@orbit_layout]
   end
 
-  defp call_view({mod, fun}, assigns) when is_atom(mod) and is_atom(fun) do
-    apply(mod, fun, [assigns])
-  end
-
-  defp call_view(fun, assigns) when is_function(fun, 1) do
-    fun.(assigns)
-  end
-
   @doc """
   Sends a file as a binary stream.
 
@@ -229,18 +221,10 @@ defmodule Orbit.Controller do
   - `:mime_type` - the MIME type of the file; if unspecified, it is determined from the file extension
   """
   def send_file(%Request{} = req, path, opts \\ []) do
-    mime_type = opts[:mime_type] || mime_type(path)
+    mime_type = opts[:mime_type] || MIME.from_path(path)
 
     req
     |> Request.success(mime_type)
     |> put_body(File.stream!(path, [], 1024))
-  end
-
-  defp mime_type(path) do
-    if Path.extname(path) == "gmi" do
-      Gemtext.mime_type()
-    else
-      MIME.from_path(path)
-    end
   end
 end

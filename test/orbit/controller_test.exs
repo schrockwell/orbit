@@ -50,6 +50,12 @@ defmodule Orbit.ControllerTest do
     def action(req, arg), do: gmi(req, inspect(arg))
   end
 
+  defmodule NoViewController do
+    use Orbit.Controller
+
+    def no_view(req, _params), do: render(req)
+  end
+
   test "action/2 calls the action on the controller" do
     # GIVEN
     req = %Request{}
@@ -118,6 +124,16 @@ defmodule Orbit.ControllerTest do
     assert req.body == "show"
   end
 
+  test "render/1 raises an error if no view is defined" do
+    # GIVEN
+    req = %Request{}
+
+    # WHEN/THEN
+    assert_raise RuntimeError, fn ->
+      NoViewController.call(req, :no_view)
+    end
+  end
+
   test "put_layout/2 sets a layout for the controller" do
     # GIVEN
     req = %Request{}
@@ -162,7 +178,7 @@ defmodule Orbit.ControllerTest do
     assert view == (&TestView.show/1)
   end
 
-  test "send_file/3 sends a file as a response" do
+  test "send_file/3 can send a plain text file as a response" do
     # GIVEN
     req = %Request{}
 
@@ -174,6 +190,36 @@ defmodule Orbit.ControllerTest do
 
     assert %File.Stream{
              path: "test/support/test.txt"
+           } = req.body
+  end
+
+  test "send_file/3 can send a Gemtext file as a response" do
+    # GIVEN
+    req = %Request{}
+
+    # WHEN
+    req = Orbit.Controller.send_file(req, "test/support/test.gmi")
+
+    # THEN
+    assert req.meta == "text/gemini; charset=utf-8"
+
+    assert %File.Stream{
+             path: "test/support/test.gmi"
+           } = req.body
+  end
+
+  test "send_file/3 can send an image file as a response" do
+    # GIVEN
+    req = %Request{}
+
+    # WHEN
+    req = Orbit.Controller.send_file(req, "test/support/test.jpeg")
+
+    # THEN
+    assert req.meta == "image/jpeg"
+
+    assert %File.Stream{
+             path: "test/support/test.jpeg"
            } = req.body
   end
 end

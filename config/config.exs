@@ -1,5 +1,5 @@
 import Config
 
 config :mime, :types, %{
-  "text/gemini" => ["gmi"]
+  "text/gemini; charset=utf-8" => ["gmi"]
 }
