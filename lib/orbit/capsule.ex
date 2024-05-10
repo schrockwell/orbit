@@ -7,7 +7,7 @@ defmodule Orbit.Capsule do
   Define the module:
 
       # lib/my_app_gem/capsule.ex
-      defmodule MyAppGem.Capsule do
+      defmodule MyAppGemini.Capsule do
         use Orbit.Capsule, otp_app: :my_app
         use Orbit.Router
 
@@ -17,15 +17,15 @@ defmodule Orbit.Capsule do
   Then add config:
 
       # config/config.exs
-      config :my_app, MyAppGem.Capsule,
-        certfile: "path/to/cert.pem",
-        keyfile: "path/to/key.pem"
+      config :my_app, MyAppGemini.Capsule,
+        certfile: "path/to/hostname.crt",
+        keyfile: "path/to/hostname.key"
 
   Finally, add it to the supervision tree:
 
       # lib/my_app/application.ex
       children = [
-        MyAppGem.Capsule
+        MyAppGemini.Capsule
       ]
 
   ## Options for `use Orbit.Capsule`

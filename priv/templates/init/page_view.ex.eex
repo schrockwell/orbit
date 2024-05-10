@@ -1,5 +1,0 @@
-defmodule <%= @namespace %>.PageView do
-  use <%= @namespace %>, :view
-
-  embed_templates "page_view/*"
-end

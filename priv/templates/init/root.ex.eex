@@ -9,11 +9,10 @@ defmodule <%= @namespace %> do
 
       import Orbit.Controller
       import Orbit.Request
-      import Orbit.Status
     end
   end
 
-  def view do
+  def gmi do
     quote do
       import Orbit.Gemtext
     end

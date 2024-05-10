@@ -8,6 +8,7 @@ defmodule Orbit.Request do
 
   - `client_cert` - an `Orbit.ClientCertificate` for the client TLS certificate, if provided
   - `params` - combined request parameters from the URI and query params
+    - bare query strings (e.g. `"?foo"`) are assigned to the `"_query"` key
   - `uri` - the parsed request `URI` struct
 
   ## Response Fields

@@ -87,7 +87,7 @@ defmodule OrbitTest do
   @doc """
   Performs a full request to a Gemini server over TLS
 
-  If the `uri` begins with "/", a path is assumed and the requested URL becomes `"gemini://<host>:<port><path>".
+  If the `uri` begins with "/", a path is assumed and the requested URL becomes `"gemini://<host>:<port><path>"`.
 
   ## Options
 

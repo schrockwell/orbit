@@ -12,20 +12,20 @@ defmodule Orbit.Router do
 
   ## Example
 
-      defmodule MyAppGem.Capsule do
+      defmodule MyAppGemini.Capsule do
         use Orbit.Capsule, otp_app: :my_app
         use Orbit.Router
 
-        pipe &Orbit.Controller.put_layout/2, &MyAppGem.LayoutView.main/1
-        pipe MyAppGem.SetCurrentUser
+        pipe &Orbit.Controller.put_layout/2, &MyAppGemini.LayoutView.main/1
+        pipe MyAppGemini.SetCurrentUser
 
         route "/static/*path", Orbit.Static, from: :my_app
 
         group do
-          pipe MyAppGem.RequireCurrentUser
+          pipe MyAppGemini.RequireCurrentUser
 
-          route "/messages", MyAppGem.MessageController, :index
-          route "/messages/:id", MyAppGem.MessageController, :show
+          route "/messages", MyAppGemini.MessageController, :index
+          route "/messages/:id", MyAppGemini.MessageController, :show
         end
       end
 

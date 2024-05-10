@@ -3,7 +3,7 @@ defmodule <%= @namespace %>.GemCase do
 
   using do
     quote do
-      @router <%= @namespace %>.Router
+      @capsule <%= @namespace %>.Capsule
 
       import OrbitTest
     end

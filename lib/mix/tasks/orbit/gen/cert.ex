@@ -8,8 +8,8 @@ defmodule Mix.Tasks.Orbit.Gen.Cert do
 
   The following files will be created:
 
-  - `priv/tls/<hostname>.pem` - the certificate
-  - `priv/tls/<hostname>-key.pem` - the private key
+  - `priv/tls/<hostname>.crt` - the certificate
+  - `priv/tls/<hostname>.key` - the private key
   """
 
   @shortdoc "Create a self-signed certificate"
