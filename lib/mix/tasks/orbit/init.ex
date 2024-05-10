@@ -56,12 +56,17 @@ defmodule Mix.Tasks.Orbit.Init do
           #{namespace}.Endpoint
         ]
 
-    2. Configure the endpoint:
+    2. Add configuration:
 
-          # config/runtime.exs
-          config #{otp_app}, #{namespace}.Endpoint,
-            certfile: Path.join([Application.app_dir(#{otp_app}, "priv"), "tls", "localhost.crt"]),
-            keyfile: Path.join([Application.app_dir(#{otp_app}, "priv"), "tls", "localhost.key"])
+        # config/config.exs
+        config :mime, :types, %{
+          "text/gemini" => ["gmi"]
+        }
+
+        # config/runtime.exs
+        config #{inspect(otp_app)}, #{namespace}.Endpoint,
+          certfile: Path.join([Application.app_dir(#{inspect(otp_app)}, "priv"), "tls", "localhost.crt"]),
+          keyfile: Path.join([Application.app_dir(#{inspect(otp_app)}, "priv"), "tls", "localhost.key"])
 
     3. Add the following to `mix.exs`:
 
