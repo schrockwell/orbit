@@ -32,7 +32,7 @@ defmodule Orbit do
   A basic Orbit application is structured as follows.
 
   - `MyApp` - the main application business logic
-  - `MyAppCapsule` - the namespace for the Gemini app, with common `use`s
+  - `MyAppCapsule` - the namespace for the Gemini app
   - `MyAppCapsule.Endpoint` - the combined TLS server and router
   - `MyAppCapsule.LayoutGmi` - layout templates
   - `MyAppCapsule.PageController` - a basic controller
