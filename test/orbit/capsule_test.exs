@@ -23,7 +23,7 @@ defmodule Orbit.CapsuleTest do
   test "it can be started with cert and key files", %{config: config} do
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/whatever")
@@ -42,7 +42,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/whatever")
@@ -65,7 +65,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/whatever")
@@ -80,7 +80,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp =
@@ -95,7 +95,7 @@ defmodule Orbit.CapsuleTest do
     config = Keyword.delete(config, :certfile)
 
     # WHEN
-    result = start_supervised({Orbit.Capsule, config})
+    result = start_supervised({Orbit.Endpoint, config})
 
     # THEN
     assert {:error,
@@ -109,7 +109,7 @@ defmodule Orbit.CapsuleTest do
     config = Keyword.delete(config, :keyfile)
 
     # WHEN
-    result = start_supervised({Orbit.Capsule, config})
+    result = start_supervised({Orbit.Endpoint, config})
 
     # THEN
     assert {:error,
@@ -123,7 +123,7 @@ defmodule Orbit.CapsuleTest do
     config = Keyword.delete(config, :entrypoint)
 
     # WHEN
-    result = start_supervised({Orbit.Capsule, config})
+    result = start_supervised({Orbit.Endpoint, config})
 
     # THEN
     assert {:error,
@@ -136,10 +136,10 @@ defmodule Orbit.CapsuleTest do
     # WHEN
     {{:ok, pid}, _} =
       ExUnit.CaptureLog.with_log(fn ->
-        start_supervised({Orbit.Capsule, config})
+        start_supervised({Orbit.Endpoint, config})
       end)
 
-    info = Orbit.Capsule.listener_info(pid)
+    info = Orbit.Endpoint.listener_info(pid)
 
     # THEN
     assert info == {:ok, {{0, 0, 0, 0}, 1965}}
@@ -150,7 +150,7 @@ defmodule Orbit.CapsuleTest do
     config = Keyword.put(config, :ip, "invalid")
 
     # WHEN
-    result = start_supervised({Orbit.Capsule, config})
+    result = start_supervised({Orbit.Endpoint, config})
 
     # THEN
     assert {:error,
@@ -164,7 +164,7 @@ defmodule Orbit.CapsuleTest do
     config = Keyword.put(config, :ip, {127, 0, 0, 1})
 
     # WHEN
-    result = start_supervised({Orbit.Capsule, config})
+    result = start_supervised({Orbit.Endpoint, config})
 
     # THEN
     assert {:error,
@@ -190,7 +190,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/whatever", ssl: ssl_opts)
@@ -204,7 +204,7 @@ defmodule Orbit.CapsuleTest do
   test "returns an error if the URI is too long", %{config: config} do
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/#{String.duplicate("a", 1024)}")
@@ -216,7 +216,7 @@ defmodule Orbit.CapsuleTest do
   test "returns an error if the URI is malformed", %{config: config} do
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "foobar://bat/bax")
@@ -231,7 +231,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     {resp, _} =
@@ -251,7 +251,7 @@ defmodule Orbit.CapsuleTest do
     # WHEN
     {resp, _} =
       ExUnit.CaptureLog.with_log(fn ->
-        {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+        {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
         tls_request("localhost", "/")
       end)
 
@@ -271,7 +271,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     {resp, _} =
@@ -292,7 +292,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     {resp, _} =
@@ -315,7 +315,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     resp = tls_request("localhost", "/")
@@ -334,7 +334,7 @@ defmodule Orbit.CapsuleTest do
 
     # WHEN
     ExUnit.CaptureLog.capture_log(fn ->
-      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+      {:ok, _pid} = start_supervised({Orbit.Endpoint, config})
     end)
 
     {resp, _} =

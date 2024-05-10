@@ -6,11 +6,11 @@ defmodule Mix.Tasks.Orbit.Init do
 
   The `OTP_APP` argument is the name of the existing OTP application under which the capsule will be hosted, e.g. `my_app`.
 
-  The `MODULE` argument is the namespace under which the capsule files will be generated, e.g. `MyAppGemini`.
+  The `MODULE` argument is the namespace under which the capsule files will be generated, e.g. `MyAppCapsule`.
 
   ## Example
 
-      $ mix orbit.init my_app MyAppGemini
+      $ mix orbit.init my_app MyAppCapsule
   """
 
   @shortdoc "Initialize an Orbit capsule in an existing application."
@@ -31,14 +31,14 @@ defmodule Mix.Tasks.Orbit.Init do
 
     {source_dir, assigns}
     |> copy_template("root.ex.eex", ["lib", "#{underscored}.ex"])
-    |> copy_template("capsule.ex.eex", ["lib", underscored, "capsule.ex"])
+    |> copy_template("endpoint.ex.eex", ["lib", underscored, "endpoint.ex"])
     |> copy_template("page_controller.ex.eex", ["lib", underscored, "page_controller.ex"])
     |> copy_template("page_gmi.ex.eex", ["lib", underscored, "page_gmi.ex"])
     |> copy_template("layout_gmi.ex.eex", ["lib", underscored, "layout_gmi.ex"])
     |> copy_template(["page_gmi", "home.gmi.eex.eex"], ["lib", underscored, "page_gmi", "home.gmi.eex"])
     |> copy_template(["layout_gmi", "main.gmi.eex.eex"], ["lib", underscored, "layout_gmi", "main.gmi.eex"])
-    |> copy_template(["test", "support", "gem_case.ex.eex"], ["test", "support", "gem_case.ex"])
-    |> copy_template(["test", "my_app_gem", "page_controller_test.exs.eex"], [
+    |> copy_template(["test", "support", "capsule_case.ex.eex"], ["test", "support", "capsule_case.ex"])
+    |> copy_template(["test", "my_app_capsule", "page_controller_test.exs.eex"], [
       "test",
       underscored,
       "page_controller_test.exs"
@@ -53,13 +53,13 @@ defmodule Mix.Tasks.Orbit.Init do
 
         # lib/application.ex
         children = [
-          Orbit.Capsule
+          #{namespace}.Endpoint
         ]
 
-    2. Configure the capsule:
+    2. Configure the endpoint:
 
           # config/runtime.exs
-          config #{otp_app}, #{namespace}.Capsule,
+          config #{otp_app}, #{namespace}.Endpoint,
             certfile: Path.join([Application.app_dir(#{otp_app}, "priv"), "tls", "localhost.crt"]),
             keyfile: Path.join([Application.app_dir(#{otp_app}, "priv"), "tls", "localhost.key"])
 

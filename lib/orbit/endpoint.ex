@@ -1,4 +1,4 @@
-defmodule Orbit.Capsule do
+defmodule Orbit.Endpoint do
   @moduledoc """
   The main endpoint supervisor.
 
@@ -6,9 +6,9 @@ defmodule Orbit.Capsule do
 
   Define the module:
 
-      # lib/my_app_gem/capsule.ex
-      defmodule MyAppGemini.Capsule do
-        use Orbit.Capsule, otp_app: :my_app
+      # lib/my_app_capsule/endpoint.ex
+      defmodule MyAppCapsule.Endpoint do
+        use Orbit.Endpoint, otp_app: :my_app
         use Orbit.Router
 
         # ...define pipes and routes (see Orbit.Router docs)...
@@ -17,7 +17,7 @@ defmodule Orbit.Capsule do
   Then add config:
 
       # config/config.exs
-      config :my_app, MyAppGemini.Capsule,
+      config :my_app, MyAppCapsule.Endpoint,
         certfile: "path/to/hostname.crt",
         keyfile: "path/to/hostname.key"
 
@@ -25,10 +25,10 @@ defmodule Orbit.Capsule do
 
       # lib/my_app/application.ex
       children = [
-        MyAppGemini.Capsule
+        MyAppCapsule.Endpoint
       ]
 
-  ## Options for `use Orbit.Capsule`
+  ## Options for `use Orbit.Endpoint`
 
   ### Required
 
@@ -83,7 +83,7 @@ defmodule Orbit.Capsule do
       end
 
       def child_spec(_) do
-        Orbit.Capsule.child_spec(config())
+        Orbit.Endpoint.child_spec(config())
       end
     end
   end

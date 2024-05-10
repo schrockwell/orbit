@@ -34,7 +34,7 @@ defmodule Orbit.MixProject do
             Orbit.Status
           ],
           Application: [
-            Orbit.Capsule,
+            Orbit.Endpoint,
             Orbit.Controller,
             Orbit.Router,
             Orbit.Gemtext

@@ -9,7 +9,7 @@ A simple framework for a simple protocol.
 
 Orbit borrows a lot of ideas from Plug and Phoenix.
 
-- `Orbit.Capsule` - the TLS server that accepts incoming requests (like `Phoenix.Endpoint` + `cowboy`)
+- `Orbit.Endpoint` - the TLS server that accepts incoming requests (like `Phoenix.Endpoint` + `cowboy`)
 - `Orbit.Request` - encapsulates the request-response lifecyle (like `Plug.Conn`)
 - `Orbit.Pipe` - the behaviour for request middleware (like `Plug`)
 - `Orbit.Router` - defines pipelines and routes

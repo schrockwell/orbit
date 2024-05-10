@@ -14,7 +14,7 @@ defmodule Orbit do
 
   Orbit borrows a lot of ideas from Plug and Phoenix.
 
-    - `Orbit.Capsule` - the TLS server that accepts incoming requests (`Phoenix.Endpoint` + `cowboy`)
+    - `Orbit.Endpoint` - the TLS server that accepts incoming requests (`Phoenix.Endpoint` + `cowboy`)
     - `Orbit.Request` - encapsulates the request-response lifecyle (`Plug.Conn`)
     - `Orbit.Pipe` - the behaviour for request middleware (`Plug`)
     - `Orbit.Router` - defines pipelines and routes (`Phoenix.Router`)
@@ -26,6 +26,17 @@ defmodule Orbit do
     - `Orbit.Static` - serves up files from `priv/statc` (`Plug.Static`)
     - `Orbit.Status` - a canonical list of all status codes
     - `Orbit.ClientCertificate` - extracts client certificates from the request
+
+  ## Conventions
+
+  A basic Orbit application is structured as follows.
+
+  - `MyApp` - the main application business logic
+  - `MyAppCapsule` - the namespace for the Gemini app, with common `use`s
+  - `MyAppCapsule.Endpoint` - the combined TLS server and router
+  - `MyAppCapsule.LayoutGMI` - layout templates
+  - `MyAppCapsule.PageController` - a basic controller
+  - `MyAppCapsule.PageGMI` - templates for that controller
 
   ## Quickstart
 
@@ -48,7 +59,7 @@ defmodule Orbit do
   Generate some files (don't worry, existing files won't be modified):
 
       $ mix deps.get
-      $ mix orbit.init my_app MyAppGemini
+      $ mix orbit.init my_app MyAppCapsule
 
   Follow the instructions from the task's output.
 
