@@ -135,7 +135,7 @@ defmodule Orbit.Gemtext do
         |> hd()
         |> String.to_atom()
 
-      quoted = EEx.compile_file(template_path, trim: true)
+      quoted = EEx.compile_file(template_path)
 
       quote do
         require EEx
