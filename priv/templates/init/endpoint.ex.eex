@@ -2,10 +2,10 @@ defmodule <%= @namespace %>.Endpoint do
   use Orbit.Endpoint, otp_app: <%= @otp_app %>
   use Orbit.Router
 
-  alias <%= @namespace %>.LayoutGMI
+  alias <%= @namespace %>.LayoutGmi
   alias <%= @namespace %>.PageController
 
-  pipe &Orbit.Controller.put_layout/2, &LayoutGMI.main/1
+  pipe &Orbit.Controller.put_layout/2, &LayoutGmi.main/1
 
   route "/static/*path", Orbit.Static, from: <%= @otp_app %>
 

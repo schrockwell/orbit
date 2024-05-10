@@ -1,7 +1,7 @@
 defmodule <%= @namespace %>.PageController do
   use <%= @namespace %>, :controller
 
-  view <%= @namespace %>.PageGMI
+  view <%= @namespace %>.PageGmi
 
   def home(req, _params) do
     name = if req.client_cert, do: req.client_cert.common_name, else: "world"

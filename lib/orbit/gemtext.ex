@@ -20,7 +20,7 @@ defmodule Orbit.Gemtext do
 
   ### Importing templates from a directory
 
-      defmodule MyAppCapsule.PostGMI do
+      defmodule MyAppCapsule.PostGmi do
         import Orbit.Gemtext
 
         embed_templates "post_gmi/*"
@@ -28,7 +28,7 @@ defmodule Orbit.Gemtext do
 
   ### Writing templates directly
 
-      defmodule MyAppCapsule.PostGMI do
+      defmodule MyAppCapsule.PostGmi do
         import Orbit.Gemtext
 
         def list(assigns) do

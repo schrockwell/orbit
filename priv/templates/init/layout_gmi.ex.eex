@@ -1,4 +1,4 @@
-defmodule <%= @namespace %>.LayoutGMI do
+defmodule <%= @namespace %>.LayoutGmi do
   use <%= @namespace %>, :gmi
 
   embed_templates "layout_gmi/*"

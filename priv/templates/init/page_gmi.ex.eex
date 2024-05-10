@@ -1,4 +1,4 @@
-defmodule <%= @namespace %>.PageGMI do
+defmodule <%= @namespace %>.PageGmi do
   use <%= @namespace %>, :gmi
 
   embed_templates "page_gmi/*"

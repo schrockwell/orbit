@@ -34,9 +34,9 @@ defmodule Orbit do
   - `MyApp` - the main application business logic
   - `MyAppCapsule` - the namespace for the Gemini app, with common `use`s
   - `MyAppCapsule.Endpoint` - the combined TLS server and router
-  - `MyAppCapsule.LayoutGMI` - layout templates
+  - `MyAppCapsule.LayoutGmi` - layout templates
   - `MyAppCapsule.PageController` - a basic controller
-  - `MyAppCapsule.PageGMI` - templates for that controller
+  - `MyAppCapsule.PageGmi` - templates for that controller
 
   ## Quickstart
 
