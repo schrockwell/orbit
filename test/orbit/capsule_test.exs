@@ -200,4 +200,149 @@ defmodule Orbit.CapsuleTest do
     assert_received {:request, %Orbit.Request{} = req}
     assert %Orbit.ClientCertificate{common_name: "client"} = req.client_cert
   end
+
+  test "returns an error if the URI is too long", %{config: config} do
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    resp = tls_request("localhost", "/#{String.duplicate("a", 1024)}")
+
+    # THEN
+    assert resp == "59 URI too long\r\n"
+  end
+
+  test "returns an error if the URI is malformed", %{config: config} do
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    resp = tls_request("localhost", "/", uri: "foobar://bat/bax")
+
+    # THEN
+    assert resp == "59 Malformed URI\r\n"
+  end
+
+  test "returns a stacktrace if :debug_errors is true", %{config: config} do
+    # GIVEN
+    config = Keyword.merge(config, debug_errors: true, entrypoint: fn _, _ -> raise "boom" end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    {resp, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        tls_request("localhost", "/")
+      end)
+
+    # THEN
+    assert String.starts_with?(resp, "20 text/gemini; charset=utf-8\r\n")
+    assert String.contains?(resp, "Orbit.CapsuleTest")
+  end
+
+  test "returns :temporary_failure on an exception", %{config: config} do
+    # GIVEN
+    config = Keyword.put(config, :entrypoint, fn _, _ -> raise "boom" end)
+
+    # WHEN
+    {resp, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+        tls_request("localhost", "/")
+      end)
+
+    # THEN
+    assert resp == "40 Internal server error\r\n"
+  end
+
+  test "raises if the response is sent twice", %{config: config} do
+    # GIVEN
+    config =
+      Keyword.put(config, :entrypoint, fn req, _ ->
+        # this is a contrived example...
+        req
+        |> Map.put(:sent?, true)
+        |> gmi("Hello, world!")
+      end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    {resp, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        tls_request("localhost", "/")
+      end)
+
+    # THEN
+    assert resp == "40 Internal server error\r\n"
+  end
+
+  test "raises if the response status code is not set", %{config: config} do
+    # GIVEN
+    config =
+      Keyword.put(config, :entrypoint, fn req, _ ->
+        req
+      end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    {resp, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        tls_request("localhost", "/")
+      end)
+
+    # THEN
+    assert resp == "40 Internal server error\r\n"
+  end
+
+  test "handles responses with nil meta", %{config: config} do
+    # GIVEN
+    config =
+      Keyword.put(config, :entrypoint, fn req, _ ->
+        req
+        |> gmi("Hello, world!")
+        |> Map.put(:meta, nil)
+      end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    resp = tls_request("localhost", "/")
+
+    # THEN
+    assert resp == "20\r\nHello, world!"
+  end
+
+  test "sends files", %{config: config} do
+    # GIVEN
+    config =
+      Keyword.put(config, :entrypoint, fn req, _ ->
+        req
+        |> send_file("priv/static/index.gmi")
+      end)
+
+    # WHEN
+    ExUnit.CaptureLog.capture_log(fn ->
+      {:ok, _pid} = start_supervised({Orbit.Capsule, config})
+    end)
+
+    {resp, _} =
+      ExUnit.CaptureLog.with_log(fn ->
+        tls_request("localhost", "/")
+      end)
+
+    # THEN
+    assert resp == "20 text/gemini; charset=utf-8\r\n# Hello, world!"
+  end
 end

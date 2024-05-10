@@ -67,7 +67,7 @@ defmodule Orbit.Handler do
       if state[:debug_errors] do
         req
         |> Orbit.Controller.gmi("""
-        # 💥 Internal server error 💥
+        # Internal server error
 
         ## (#{inspect(error.__struct__)}) #{Exception.message(error)}
 
