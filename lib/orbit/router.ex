@@ -70,7 +70,7 @@ defmodule Orbit.Router do
   The `pipe` argument may be either:
 
   - a module that implements the `Orbit.Pipe` behaviour
-  - a 2-arity function capture that accepts the request and an arugment
+  - a 2-arity function capture that accepts the request and an argument
 
   If no route matches the request path, the router responds with a `:not_found` status.
   """
@@ -120,7 +120,7 @@ defmodule Orbit.Router do
         end
       end
   """
-  defmacro group(do: block) do
+  defmacro group([do: block] = _block) do
     quote do
       @pipeline [[] | @pipeline]
 
@@ -139,10 +139,8 @@ defmodule Orbit.Router do
   - a function capture of a 2-arity function
 
   If the pipe halts the request, the router does not process any further pipes or route matches.
-
-  Pipelines (sets of pipes) may be constructed by defining individual pipes inside `group/1` blocks.
   """
-  defmacro pipe(pipe, arg \\ []) do
+  defmacro pipe(pipe, arg \\ nil) do
     quote do
       @pipeline [
         [{unquote(pipe), unquote(arg)} | hd(@pipeline)]
