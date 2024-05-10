@@ -10,28 +10,14 @@ defmodule OrbitTest do
   @doc """
   Performs a request and returns the processed request.
 
-  If `path_or_url` begins with `"/"`, a path is assumed and the requested URL is `"gemini://localhost/<path>"`.
+  If `path_or_url` begins with `"/"`, a path is assumed and the requested URL becomes `"gemini://localhost/<path>"`.
 
   ## Options
 
   - `:client_cert` - the client certificate, which can be constructed with `build_client_cert/2`
   - `:query` - the URL query string, or key/value pairs as a map or keyword list
-  - `:router` - the router to handle the request; defaults to `@router`
   """
-  defmacro request(path_or_url, opts \\ []) do
-    if Module.has_attribute?(__CALLER__.module, :router) do
-      quote do
-        OrbitTest.__request__(@router, unquote(path_or_url), unquote(opts))
-      end
-    else
-      quote do
-        OrbitTest.__request__(unquote(opts)[:router], unquote(path_or_url), unquote(opts))
-      end
-    end
-  end
-
-  @doc false
-  def __request__(router, path_or_url, opts) do
+  def request(entrypoint, path_or_url, opts \\ []) do
     query =
       case opts[:query] do
         kvs when is_list(kvs) or is_map(kvs) -> URI.encode_query(kvs, :rfc3986)
@@ -40,20 +26,18 @@ defmodule OrbitTest do
         _ -> raise "invalid value for `:query` option; must be a keyword list, map, string, or nil"
       end
 
-    url =
-      case path_or_url do
-        "/" <> path -> "gemini://localhost/#{path}"
-        url -> url
-      end
-
-    uri = %{URI.parse(url) | query: query}
+    uri =
+      path_or_url
+      |> to_absolute_uri("localhost", 1965)
+      |> URI.parse()
+      |> Map.put(:query, query)
 
     request = %Request{
       uri: uri,
       client_cert: opts[:client_cert]
     }
 
-    Orbit.Pipe.call(router, request, [])
+    Orbit.Pipe.call(entrypoint, request, [])
   end
 
   @doc """
@@ -100,11 +84,23 @@ defmodule OrbitTest do
     |> elem(1)
   end
 
-  def tls_request(host, path, opts \\ []) do
+  @doc """
+  Performs a full request to a Gemini server over TLS
+
+  If the `uri` begins with "/", a path is assumed and the requested URL becomes `"gemini://<host>:<port><path>".
+
+  ## Options
+
+  - `:port` - the port to connect to; defaults to `1965`
+  - `:ssl` - the SSL options, passed on to `:ssl.connect/3`
+  """
+  @spec tls_request(String.t(), String.t(), Keyword.t()) :: String.t()
+  def tls_request(host, uri, opts \\ []) do
     port = opts[:port] || 1965
     ssl_opts = opts[:ssl] || []
     host = ~c"#{host}"
-    uri = opts[:uri] || "gemini://#{host}:#{port}#{path}"
+
+    uri = to_absolute_uri(uri, host, port)
 
     # Open TLS client
     ssl_opts = Keyword.merge([verify: :verify_none, active: false], ssl_opts)
@@ -131,6 +127,19 @@ defmodule OrbitTest do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  defp to_absolute_uri(uri, host, port) do
+    case {to_string(uri), port} do
+      {"/" <> path, 1965} ->
+        "gemini://#{host}/#{path}"
+
+      {"/" <> path, port} ->
+        "gemini://#{host}:#{port}/#{path}"
+
+      {uri, _port} ->
+        uri
     end
   end
 end

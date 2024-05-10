@@ -8,8 +8,9 @@ defmodule Orbit.Controller do
 
   ## Usage
 
-  The `use Orbit.Controller` macro injects the following functions into the module:
+  The `use Orbit.Controller` macro injects the following into the module:
 
+      @behaviour Orbit.Pipe
       def call(request, arg)
       def action(request, action) # overridable
 
@@ -30,7 +31,7 @@ defmodule Orbit.Controller do
   ## Views
 
   A controller can render responses directly in the controller action, or defer the rendering to an external view
-  module. Define the `view/1` pipe to set the view based on the controller action name.
+  module. Define the `view/1` pipe to set the view template based on the controller action name.
 
         view MyApp.MyView
 
@@ -40,7 +41,7 @@ defmodule Orbit.Controller do
 
   ## Layouts
 
-  Layouts are simply views that are provided an `@inner_content` assign which contains the content of the child view
+  Layouts are simply templates that are provided an `@inner_content` assign which contains the content of the child view
   to render within the layout.
 
       def outer_layout(assigns) do

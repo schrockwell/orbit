@@ -28,13 +28,13 @@ defmodule Orbit.MixProject do
         groups_for_modules: [
           Framework: [
             Orbit,
-            Orbit.Capsule,
             Orbit.ClientCertificate,
             Orbit.Pipe,
             Orbit.Request,
             Orbit.Status
           ],
           Application: [
+            Orbit.Capsule,
             Orbit.Controller,
             Orbit.Router,
             Orbit.Gemtext
@@ -45,6 +45,9 @@ defmodule Orbit.MixProject do
           Testing: [
             OrbitTest
           ]
+        ],
+        groups_for_docs: [
+          "Status Functions": &(&1[:section] == :status)
         ]
       ]
     ]

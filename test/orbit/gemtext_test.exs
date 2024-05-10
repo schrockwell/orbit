@@ -3,47 +3,47 @@ defmodule Orbit.GemtextTest do
 
   import Orbit.Gemtext
 
-  test "render/1 renders a view" do
+  test "render/1 renders a template" do
     # GIVEN
-    view = fn assigns -> ~G"hello" end
+    template = fn assigns -> ~G"hello" end
 
     # WHEN
-    result = render(view)
+    result = render(template)
 
     # THEN
     assert result == "hello"
   end
 
-  test "render/2 renders a view with assigns" do
+  test "render/2 renders a template with assigns" do
     # GIVEN
-    view = fn assigns -> ~G"hello <%= @name %>" end
+    template = fn assigns -> ~G"hello <%= @name %>" end
 
     # WHEN
-    result = render(view, name: "world")
+    result = render(template, name: "world")
 
     # THEN
     assert result == "hello world"
   end
 
-  test "render/2 renders a view with block" do
+  test "render/2 renders a template with block" do
     # GIVEN
-    view = fn assigns -> ~G"hello <%= @inner_content %>" end
+    template = fn assigns -> ~G"hello <%= @inner_content %>" end
 
     # WHEN
     assigns = %{}
-    result = ~G"<%= render view do %>world<% end %>"
+    result = ~G"<%= render template do %>world<% end %>"
 
     # THEN
     assert result == "hello world"
   end
 
-  test "render/2 renders a view with assigns and block" do
+  test "render/2 renders a template with assigns and block" do
     # GIVEN
-    view = fn assigns -> ~G"hello <%= @name %> <%= @inner_content %>" end
+    template = fn assigns -> ~G"hello <%= @name %> <%= @inner_content %>" end
 
     # WHEN
     assigns = %{name: "world"}
-    result = ~G"<%= render view, name: @name do %>inner content<% end %>"
+    result = ~G"<%= render template, name: @name do %>inner content<% end %>"
 
     # THEN
     assert result == "hello world inner content"

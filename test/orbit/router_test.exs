@@ -54,7 +54,7 @@ defmodule Orbit.RouterTest do
 
   test "routes a basic request" do
     # WHEN
-    resp = request("/hello", router: TestRouter)
+    resp = request(TestRouter, "/hello")
 
     # THEN
     assert body(resp) == "Hello, world!"
@@ -62,7 +62,7 @@ defmodule Orbit.RouterTest do
 
   test "returns a :not_found status when no route is found" do
     # WHEN
-    resp = request("/goodbye", router: TestRouter)
+    resp = request(TestRouter, "/goodbye")
 
     # THEN
     assert status(resp) == :not_found
@@ -71,7 +71,7 @@ defmodule Orbit.RouterTest do
 
   test "pipes are applied in a group" do
     # WHEN
-    resp = request("/test_groups_1", router: TestRouter)
+    resp = request(TestRouter, "/test_groups_1")
 
     # THEN
     assert body(resp) == inspect(%{foo: :bar, bat: :baz})
@@ -79,7 +79,7 @@ defmodule Orbit.RouterTest do
 
   test "pipes are applied in nested groups" do
     # WHEN
-    resp = request("/test_groups_2", router: TestRouter)
+    resp = request(TestRouter, "/test_groups_2")
 
     # THEN
     assert body(resp) == inspect(%{ping: :pong, foo: :bar, bat: :baz})
@@ -87,7 +87,7 @@ defmodule Orbit.RouterTest do
 
   test "routes with parameters" do
     # WHEN
-    resp = request("/users/123/posts/456/edit", router: TestRouter)
+    resp = request(TestRouter, "/users/123/posts/456/edit")
 
     # THEN
     assert body(resp) == """
@@ -98,7 +98,7 @@ defmodule Orbit.RouterTest do
 
   test "routes with wildcard parameters" do
     # WHEN
-    resp = request("/posts/favorite/cat/pictures", router: TestRouter)
+    resp = request(TestRouter, "/posts/favorite/cat/pictures")
 
     # THEN
     assert body(resp) == """

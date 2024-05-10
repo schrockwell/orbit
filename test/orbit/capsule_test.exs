@@ -219,7 +219,7 @@ defmodule Orbit.CapsuleTest do
       {:ok, _pid} = start_supervised({Orbit.Capsule, config})
     end)
 
-    resp = tls_request("localhost", "/", uri: "foobar://bat/bax")
+    resp = tls_request("localhost", "foobar://bat/bax")
 
     # THEN
     assert resp == "59 Malformed URI\r\n"

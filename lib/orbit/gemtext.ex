@@ -4,23 +4,32 @@ defmodule Orbit.Gemtext do
 
   A **template** is any 1-arity function that accepts an `assigns` map and returns a string of rendered Gemtext.
 
-  The `~G` sigil is used to precompile EEx templates as strings when an `assigns` variable or argument is
-  in scope.
+  A **view** is a module containing template functions.
 
-  Templates can be defined as functions, or embedded from `.gmi.eex` files into view module via `embed_templates/1`.
+  Templates can be defined directly as functions, or embedded from `.gmi.eex` files into view module via `embed_templates/1`.
+
+  EEx templates can be precompiled with `sigil_G/2`, as long as an `assigns` variable is in-scope.
 
   ## Usage
 
-  Add these imports to the view module:
+  Add the imports to the view module:
 
       import Orbit.Gemtext
 
-  ## Example
+  ## Examples
 
-      defmodule MyApp.MyView do
+  ### Importing templates from a directory
+
+      defmodule MyAppGem.PostGemtext do
         import Orbit.Gemtext
 
-        embed_templates "my_view/*"
+        embed_templates "post_gemtext/*"
+      end
+
+  ### Writing templates directly
+
+      defmodule MyAppGem.PostGemtext do
+        import Orbit.Gemtext
 
         def list(assigns) do
           ~G\"\"\"
@@ -30,6 +39,7 @@ defmodule Orbit.Gemtext do
           \"\"\"
         end
       end
+
   """
 
   @doc """
@@ -68,33 +78,12 @@ defmodule Orbit.Gemtext do
     end
   end
 
-  @doc false
-  defmacro render(template) do
-    quote do
-      unquote(template).(%{})
-    end
-  end
-
-  @doc false
-  defmacro render(template, do: block) do
-    quote do
-      unquote(template).(%{inner_content: unquote(block)})
-    end
-  end
-
-  @doc false
-  defmacro render(template, assigns) do
-    quote do
-      unquote(template).(Enum.into(unquote(assigns), %{}))
-    end
-  end
-
   @doc """
   Renders a template.
 
   The `assigns` and `block` arguments are optional.
 
-  If a block is passed, its contents are renderd and set to `@inner_content` assign of the template.
+  If a block is passed, its contents set to `@inner_content` assign of the template.
 
   ## Examples
 
@@ -102,18 +91,32 @@ defmodule Orbit.Gemtext do
 
       <%= render &my_template/1, title: @title %>
 
-      <%= render &my_component/1 do %>
-        inner content
+      <%= render &my_template/1 do %>
+        inner content here
       <% end %>
   """
-  defmacro render(view, assigns, _block = [do: block]) do
+  defmacro render(template, assigns \\ [], block \\ [])
+
+  defmacro render(template, [do: block], []) do
     quote do
-      unquote(view).(Map.put(Enum.into(unquote(assigns), %{}), :inner_content, unquote(block)))
+      unquote(template).(%{inner_content: unquote(block)})
+    end
+  end
+
+  defmacro render(template, assigns, []) do
+    quote do
+      unquote(template).(Enum.into(unquote(assigns), %{}))
+    end
+  end
+
+  defmacro render(template, assigns, do: block) do
+    quote do
+      unquote(template).(Enum.into(unquote(assigns), %{inner_content: unquote(block)}))
     end
   end
 
   @doc """
-  Define template functions from external files.
+  Precompile template functions from external files.
 
   Every file found in the wildcard `path` is compiled as EEx and injected as a template function into the view
   module, using the file basename as the function name. For example, `index.gmi.eex` will be defined as

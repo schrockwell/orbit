@@ -9,22 +9,17 @@ A simple framework for a simple protocol.
 
 Orbit borrows a lot of ideas from Plug and Phoenix.
 
-- The foundation consists of:
-
-  - `Orbit.Capsule` - TLS endpoint that accepts incoming connections (like `Phoenix.Endpoint` and `cowboy` combined)
-  - `Orbit.Request` - encapsulates the request-response lifecyle (like `Plug.Conn`)
-
-- Your application implements:
-
-  - `Orbit.Pipe` - the behaviour for request middleware (like `Plug`)
-  - `Orbit.Router` - defines pipelines and routes
-  - `Orbit.Controller` - processes requests and render views
-  - `Orbit.Gemtext` - renders Gemtext content
+- `Orbit.Capsule` - the TLS server that accepts incoming requests (like `Phoenix.Endpoint` + `cowboy`)
+- `Orbit.Request` - encapsulates the request-response lifecyle (like `Plug.Conn`)
+- `Orbit.Pipe` - the behaviour for request middleware (like `Plug`)
+- `Orbit.Router` - defines pipelines and routes
+- `Orbit.Controller` - processes requests
+- `Orbit.Gemtext` - renders Gemtext templates
 
 - Some additional niceties:
 
-  - `Orbit.Static` - serves up static content
-  - `Orbit.Status` - applies response status codes
+  - `Orbit.Static` - serves up files from `priv/statc`
+  - `Orbit.Status` - applies status codes to `Orbit.Request`
 
 ## There's still a lot TODO!
 

@@ -12,19 +12,20 @@ defmodule Orbit.Router do
 
   ## Example
 
-      defmodule MyApp.Router do
+      defmodule MyAppGem.Capsule do
+        use Orbit.Capsule, otp_app: :my_app
         use Orbit.Router
 
-        pipe &Orbit.Controller.put_layout/2, &MyApp.LayoutView.main/1
-        pipe MyApp.SetCurrentUser
+        pipe &Orbit.Controller.put_layout/2, &MyAppGem.LayoutView.main/1
+        pipe MyAppGem.SetCurrentUser
 
-        route "/static/*path", Orbit.Static, from: "priv/static"
+        route "/static/*path", Orbit.Static, from: :my_app
 
         group do
-          pipe MyApp.RequireCurrentUser
+          pipe MyAppGem.RequireCurrentUser
 
-          route "/messages", MyApp.MessageController, :index
-          route "/messages/:id", MyApp.MessageController, :show
+          route "/messages", MyAppGem.MessageController, :index
+          route "/messages/:id", MyAppGem.MessageController, :show
         end
       end
 
@@ -136,11 +137,10 @@ defmodule Orbit.Router do
 
   - a module that implements `Orbit.Pipe`
   - a function capture of a 2-arity function
-  - a `{module, function}` tuple that points to a 2-arity public function in a module
 
   If the pipe halts the request, the router does not process any further pipes or route matches.
 
-  Pipelines (sets of pipes) may be constructed by defining pipes inside `group/1` blocks.
+  Pipelines (sets of pipes) may be constructed by defining individual pipes inside `group/1` blocks.
   """
   defmacro pipe(pipe, arg \\ []) do
     quote do

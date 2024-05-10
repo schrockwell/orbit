@@ -21,11 +21,14 @@ defmodule Orbit.Pipe do
   """
   @callback call(req :: Request.t(), arg :: any) :: Request.t()
 
-  def call(mod, req, arg) when is_atom(mod) do
-    mod.call(req, arg)
+  @doc """
+  Trigger a pipe.
+  """
+  def call(mod_or_fun, req, arg) when is_atom(mod_or_fun) do
+    mod_or_fun.call(req, arg)
   end
 
-  def call(fun, req, arg) when is_function(fun, 2) do
-    fun.(req, arg)
+  def call(mod_or_fun, req, arg) when is_function(mod_or_fun, 2) do
+    mod_or_fun.(req, arg)
   end
 end

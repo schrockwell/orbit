@@ -64,7 +64,7 @@ defmodule OrbitTest.Test do
     end
 
     # WHEN
-    req = OrbitTest.request("test", router: pipe, query: %{name: "schrockwell"})
+    req = OrbitTest.request(pipe, "test", query: %{name: "schrockwell"})
 
     # THEN
     assert req.uri.query == "name=schrockwell"
@@ -77,7 +77,7 @@ defmodule OrbitTest.Test do
     end
 
     # WHEN
-    req = OrbitTest.request("test", router: pipe, query: "foobar")
+    req = OrbitTest.request(pipe, "test", query: "foobar")
 
     # THEN
     assert req.uri.query == "foobar"
@@ -91,7 +91,7 @@ defmodule OrbitTest.Test do
 
     # WHEN/THEN
     assert_raise RuntimeError, fn ->
-      OrbitTest.request("test", router: pipe, query: 123)
+      OrbitTest.request(pipe, "test", query: 123)
     end
   end
 end

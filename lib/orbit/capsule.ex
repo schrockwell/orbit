@@ -11,7 +11,7 @@ defmodule Orbit.Capsule do
         use Orbit.Capsule, otp_app: :my_app
         use Orbit.Router
 
-        # ...define pipes and routes...
+        # ...define pipes and routes (see Orbit.Router docs)...
       end
 
   Then add config:
@@ -88,6 +88,9 @@ defmodule Orbit.Capsule do
     end
   end
 
+  @doc """
+  Starts the Capsule supervisor.
+  """
   def start_link(opts) do
     Supervisor.start_link(__MODULE__, opts)
   end
