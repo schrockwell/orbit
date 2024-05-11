@@ -49,6 +49,8 @@ defmodule Orbit.Request do
           uri: %URI{}
         }
 
+  defguardp is_meta(meta) when is_nil(meta) or is_binary(meta)
+
   @doc """
   Stops the request pipeline from further execution.
   """
@@ -100,7 +102,7 @@ defmodule Orbit.Request do
   Responds with a :input status.
   """
   @doc section: :status
-  def input(req, prompt \\ nil) do
+  def input(req, prompt \\ nil) when is_meta(prompt) do
     put_status(req, :input, prompt)
   end
 
@@ -108,7 +110,7 @@ defmodule Orbit.Request do
   Responds with a :sensitive_input status.
   """
   @doc section: :status
-  def sensitive_input(req, prompt \\ nil) do
+  def sensitive_input(req, prompt \\ nil) when is_meta(prompt) do
     put_status(req, :sensitive_input, prompt)
   end
 
@@ -116,7 +118,7 @@ defmodule Orbit.Request do
   Responds with a :success status.
   """
   @doc section: :status
-  def success(req, mime_type \\ nil) do
+  def success(req, mime_type \\ nil) when is_meta(mime_type) do
     put_status(req, :success, mime_type)
   end
 
@@ -124,7 +126,7 @@ defmodule Orbit.Request do
   Responds with a :redirect_temporary status.
   """
   @doc section: :status
-  def redirect_temporary(req, uri \\ nil) do
+  def redirect_temporary(req, uri \\ nil) when is_meta(uri) do
     put_status(req, :redirect_temporary, uri)
   end
 
@@ -132,7 +134,7 @@ defmodule Orbit.Request do
   Responds with a :redirect_permanent status.
   """
   @doc section: :status
-  def redirect_permanent(req, uri \\ nil) do
+  def redirect_permanent(req, uri \\ nil) when is_meta(uri) do
     put_status(req, :redirect_permanent, uri)
   end
 
@@ -140,7 +142,7 @@ defmodule Orbit.Request do
   Responds with a :temporary_failure status.
   """
   @doc section: :status
-  def temporary_failure(req, message \\ nil) do
+  def temporary_failure(req, message \\ nil) when is_meta(message) do
     put_status(req, :temporary_failure, message)
   end
 
@@ -148,7 +150,7 @@ defmodule Orbit.Request do
   Responds with a :server_unavailable status.
   """
   @doc section: :status
-  def server_unavailable(req, message \\ nil) do
+  def server_unavailable(req, message \\ nil) when is_meta(message) do
     put_status(req, :server_unavailable, message)
   end
 
@@ -156,7 +158,7 @@ defmodule Orbit.Request do
   Responds with a :cgi_error status.
   """
   @doc section: :status
-  def cgi_error(req, message \\ nil) do
+  def cgi_error(req, message \\ nil) when is_meta(message) do
     put_status(req, :cgi_error, message)
   end
 
@@ -164,7 +166,7 @@ defmodule Orbit.Request do
   Responds with a :proxy_error status.
   """
   @doc section: :status
-  def proxy_error(req, message \\ nil) do
+  def proxy_error(req, message \\ nil) when is_meta(message) do
     put_status(req, :proxy_error, message)
   end
 
@@ -172,7 +174,7 @@ defmodule Orbit.Request do
   Responds with a :slow_down status.
   """
   @doc section: :status
-  def slow_down(req, message \\ nil) do
+  def slow_down(req, message \\ nil) when is_meta(message) do
     put_status(req, :slow_down, message)
   end
 
@@ -180,7 +182,7 @@ defmodule Orbit.Request do
   Responds with a :permanent_failure status.
   """
   @doc section: :status
-  def permanent_failure(req, message \\ nil) do
+  def permanent_failure(req, message \\ nil) when is_meta(message) do
     put_status(req, :permanent_failure, message)
   end
 
@@ -188,7 +190,7 @@ defmodule Orbit.Request do
   Responds with a :not_found status.
   """
   @doc section: :status
-  def not_found(req, message \\ nil) do
+  def not_found(req, message \\ nil) when is_meta(message) do
     put_status(req, :not_found, message)
   end
 
@@ -196,7 +198,7 @@ defmodule Orbit.Request do
   Responds with a :gone status.
   """
   @doc section: :status
-  def gone(req, message \\ nil) do
+  def gone(req, message \\ nil) when is_meta(message) do
     put_status(req, :gone, message)
   end
 
@@ -204,7 +206,7 @@ defmodule Orbit.Request do
   Responds with a :proxy_request_refused status.
   """
   @doc section: :status
-  def proxy_request_refused(req, message \\ nil) do
+  def proxy_request_refused(req, message \\ nil) when is_meta(message) do
     put_status(req, :proxy_request_refused, message)
   end
 
@@ -212,7 +214,7 @@ defmodule Orbit.Request do
   Responds with a :bad_request status.
   """
   @doc section: :status
-  def bad_request(req, message \\ nil) do
+  def bad_request(req, message \\ nil) when is_meta(message) do
     put_status(req, :bad_request, message)
   end
 
@@ -220,7 +222,7 @@ defmodule Orbit.Request do
   Responds with a :client_certificate_required status.
   """
   @doc section: :status
-  def client_certificate_required(req, message \\ nil) do
+  def client_certificate_required(req, message \\ nil) when is_meta(message) do
     put_status(req, :client_certificate_required, message)
   end
 
@@ -228,7 +230,7 @@ defmodule Orbit.Request do
   Responds with a :certificate_not_authorized status.
   """
   @doc section: :status
-  def certificate_not_authorized(req, message \\ nil) do
+  def certificate_not_authorized(req, message \\ nil) when is_meta(message) do
     put_status(req, :certificate_not_authorized, message)
   end
 
@@ -236,7 +238,7 @@ defmodule Orbit.Request do
   Responds with a :certificate_not_valid status.
   """
   @doc section: :status
-  def certificate_not_valid(req, message \\ nil) do
+  def certificate_not_valid(req, message \\ nil) when is_meta(message) do
     put_status(req, :certificate_not_valid, message)
   end
 end
