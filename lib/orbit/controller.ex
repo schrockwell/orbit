@@ -103,8 +103,8 @@ defmodule Orbit.Controller do
       def call(%Request{} = req, action) when is_atom(action) do
         req
         |> put_private(unquote(@orbit_action), action)
-        |> Orbit.Pipeline.call(__pipeline__())
-        |> action(action)
+        |> assign(:req, %{req | assigns: :assigns_not_in_req})
+        |> Orbit.Pipeline.call(__pipeline__(action))
       end
 
       @doc false
@@ -118,16 +118,40 @@ defmodule Orbit.Controller do
 
   defmacro __before_compile__(_env) do
     quote do
-      def __pipeline__, do: @pipeline
+      @ordered_pipeline Enum.reverse(@pipeline)
+      def __pipeline__(action) do
+        @ordered_pipeline
+        |> Enum.filter(fn {pipe, arg, opts} ->
+          cond do
+            opts[:only] ->
+              action in opts[:only]
+
+            opts[:except] ->
+              action not in opts[:except]
+
+            true ->
+              true
+          end
+        end)
+        |> Enum.map(fn {pipe, arg, _opts} -> {pipe, arg} end)
+        |> then(fn p ->
+          p ++ [{&action/2, action}]
+        end)
+      end
     end
   end
 
   @doc """
   Define a pipe to run in the controller prior to the action.
+
+  ## Options
+
+  - `:only` - a list of action names that will exclusively run the pipe
+  - `:except` - a list of action names that will not run the pipe
   """
-  defmacro pipe(pipe, arg \\ []) do
+  defmacro pipe(pipe, arg \\ [], opts \\ []) do
     quote do
-      @pipeline {unquote(pipe), unquote(arg)}
+      @pipeline {unquote(pipe), unquote(arg), unquote(opts)}
     end
   end
 

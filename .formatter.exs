@@ -7,6 +7,7 @@
       group: 1,
       pipe: 1,
       pipe: 2,
+      pipe: 3,
       route: 2,
       route: 3,
       view: 1,
