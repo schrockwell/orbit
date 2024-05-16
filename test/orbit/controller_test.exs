@@ -40,7 +40,7 @@ defmodule Orbit.ControllerTest do
       begin outer
       <%= @inner_content %>
       end outer
-      """
+      """t
     end
   end
 

@@ -59,4 +59,36 @@ defmodule Orbit.GemtextTest do
     # THEN
     assert MyView.my_template(%{name: "bob"}) == "my view bob"
   end
+
+  test "sigil_G t modifier trims the trailing newline" do
+    # GIVEN
+    template1 = fn assigns ->
+      ~G"""
+      hello
+      """
+    end
+
+    template2 = fn assigns ->
+      ~G"""
+      hello
+      """t
+    end
+
+    template3 = fn assigns ->
+      ~G"""
+      hello
+
+      """t
+    end
+
+    # WHEN
+    result1 = render(template1)
+    result2 = render(template2)
+    result3 = render(template3)
+
+    # THEN
+    assert result1 == "hello\n"
+    assert result2 == "hello"
+    assert result3 == "hello\n"
+  end
 end

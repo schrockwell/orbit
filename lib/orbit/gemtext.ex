@@ -2,13 +2,18 @@ defmodule Orbit.Gemtext do
   @moduledoc """
   Render Gemtext content.
 
+  [PrEEx.Engine](https://hexdocs.pm/preex/) is used to render Gemtext templates, instead of the default
+  `EEx.SmartEngine`, which provides a more developer-friendly approach to writing preformatted, plain-text templates.
+
+  ## Concepts
+
   A **template** is any 1-arity function that accepts an `assigns` map and returns a string of rendered Gemtext.
 
   A **view** is a module containing template functions.
 
   Templates can be defined directly as functions, or embedded from `.gmi.eex` files into view module via `embed_templates/1`.
 
-  EEx templates can be precompiled with `sigil_G/2`, as long as an `assigns` variable is in-scope.
+  Templates can be precompiled with `sigil_G/2`, as long as the `assigns` variable is in-scope.
 
   ## Usage
 
@@ -36,7 +41,7 @@ defmodule Orbit.Gemtext do
           <%= for item <- @items do %>
           * <%= item %>
           <% end %>
-          \"\"\"
+          \"\"\"t
         end
       end
 
@@ -47,21 +52,29 @@ defmodule Orbit.Gemtext do
 
   The `assigns` map must be in-scope.
 
-  A single trailing newline character `\\n` will be trimmed, if it exists.
+  ## Modifiers
+
+  - `t` - Trim trailing newline
+
+  [Multi-line strings](https://hexdocs.pm/elixir/syntax-reference.html#strings) always end with a newline, which may
+  be undesired. Append the `t` modifier to the `~G` sigil to trim the trailing newline.
 
   ## Example
 
       def hello(assigns) do
         ~G\"\"\"
         Why hello there, <%= @name %>!
-        \"\"\"
+        \"\"\"t
       end
+
+      hello(%{name: "capsuleer"})
+      # => "Why hello there, capsuleer!"
   """
-  defmacro sigil_G({:<<>>, _, [binary]}, _modifier) do
+  defmacro sigil_G({:<<>>, _, [binary]} = _string, modifiers) do
     compiled =
       binary
-      |> trim_trailing_newline()
-      |> EEx.compile_string()
+      |> trim_trailing_newline(modifiers)
+      |> EEx.compile_string(engine: PrEEx.Engine)
 
     quote do
       {result, _binding} = Code.eval_quoted(unquote(compiled), assigns: var!(assigns))
@@ -69,10 +82,9 @@ defmodule Orbit.Gemtext do
     end
   end
 
-  # Elixir herdocs (""") have a trailing "\n" which has will result in an undesired newline, so let's remove it
-  defp trim_trailing_newline(string) do
-    if String.ends_with?(string, "\n") do
-      String.slice(string, 0..-2//1)
+  defp trim_trailing_newline(string, modifiers) do
+    if ?t in modifiers do
+      String.replace_suffix(string, "\n", "")
     else
       string
     end
@@ -135,7 +147,7 @@ defmodule Orbit.Gemtext do
         |> hd()
         |> String.to_atom()
 
-      quoted = EEx.compile_file(template_path)
+      quoted = EEx.compile_file(template_path, engine: PrEEx.Engine)
 
       quote do
         require EEx
@@ -145,7 +157,7 @@ defmodule Orbit.Gemtext do
         # Previously: EEx.function_from_file(:def, unquote(template_name), unquote(template_path), [:assigns], trim: true)
         def unquote(template_name)(var!(assigns)) do
           # No-op to shut up warnings on templates that don't access assigns
-          var!(assigns)
+          _ = var!(assigns)
 
           unquote(quoted)
         end
